@@ -14,7 +14,6 @@
 		224305EC2CAB8A3A0062FC51 /* SeneParkingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */; };
 		224305EE2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */; };
 		22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C468D02CAD9FC900539A79 /* SignUp.swift */; };
-		D44E7A1F2CADE4A000A2A550 /* MainMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A1E2CADE49D00A2A550 /* MainMap.swift */; };
 		D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */; };
 /* End PBXBuildFile section */
 
@@ -46,7 +45,6 @@
 		224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITests.swift; sourceTree = "<group>"; };
 		224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		22C468D02CAD9FC900539A79 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
-		D44E7A1E2CADE49D00A2A550 /* MainMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMap.swift; sourceTree = "<group>"; };
 		D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingLotDetail.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -99,7 +97,6 @@
 			isa = PBXGroup;
 			children = (
 				D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */,
-				D44E7A1E2CADE49D00A2A550 /* MainMap.swift */,
 				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
 				2218CAF32CADD776007E0EA9 /* SignIn.swift */,
@@ -258,7 +255,6 @@
 				2218CAF42CADD776007E0EA9 /* SignIn.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
 				D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */,
-				D44E7A1F2CADE4A000A2A550 /* MainMap.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
