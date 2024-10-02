@@ -15,6 +15,7 @@
 		224305EE2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */; };
 		22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C468D02CAD9FC900539A79 /* SignUp.swift */; };
 		D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */; };
+		D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A222CAE076D00A2A550 /* MainMap.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		22C468D02CAD9FC900539A79 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
 		D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingLotDetail.swift; sourceTree = "<group>"; };
+		D44E7A222CAE076D00A2A550 /* MainMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +98,7 @@
 		224305CF2CAB8A370062FC51 /* SeneParking */ = {
 			isa = PBXGroup;
 			children = (
+				D44E7A222CAE076D00A2A550 /* MainMap.swift */,
 				D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */,
 				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
@@ -251,6 +254,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */,
 				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
 				2218CAF42CADD776007E0EA9 /* SignIn.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
