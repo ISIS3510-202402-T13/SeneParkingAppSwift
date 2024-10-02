@@ -3,6 +3,7 @@ import SwiftUI
 struct SignInView: View {
     @State private var mobileNumber: String = ""
     @State private var password: String = ""
+    @State private var login = false // State to track login status
     
     var body: some View {
         NavigationStack { // Wrap in NavigationStack
@@ -37,8 +38,13 @@ struct SignInView: View {
                         .cornerRadius(10)
                         .padding(.bottom, 10)
                     
+                    //NavigationLink(destination: MainMapView(), isActive: $login) {
+                        //EmptyView()
+                        
+                    //}
+                    
                     Button(action: {
-                        // Perform login action
+                        login = true
                     }) {
                         Text("Log in")
                             .frame(maxWidth: .infinity)
@@ -69,6 +75,9 @@ struct SignInView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 30)
+            }
+            .navigationDestination(isPresented: $login) {
+                            MainMapView()
             }
         }
     }

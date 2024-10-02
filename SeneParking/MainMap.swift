@@ -51,6 +51,7 @@ struct MainMapView: View {
             .navigationBarHidden(true)
             .onAppear(perform: loadParkingLots)
         }
+        .navigationBarHidden(true)
     }
     
     func loadParkingLots() {
