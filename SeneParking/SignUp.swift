@@ -7,6 +7,7 @@ struct SignUpView: View {
     @State private var mobileNumber: String = ""
     @State private var dateOfBirth: String = ""
     @State private var uniandesCode: String = ""
+    @State private var password: String = ""
     
     var body: some View {
         ZStack {
@@ -103,7 +104,14 @@ struct SignUpView: View {
                 .padding()
                 .background(Color.white)
                 .cornerRadius(10)
+                .padding(.bottom, 10)
+            
+            SecureField("Password", text: $password)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
                 .padding(.bottom, 20)
+            
         }
     }
     
