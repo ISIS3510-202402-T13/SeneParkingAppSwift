@@ -10,10 +10,10 @@
 		224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305D02CAB8A370062FC51 /* SeneParkingApp.swift */; };
 		224305D32CAB8A370062FC51 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305D22CAB8A370062FC51 /* ContentView.swift */; };
 		224305D52CAB8A390062FC51 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 224305D42CAB8A390062FC51 /* Assets.xcassets */; };
-		224305D82CAB8A390062FC51 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 224305D72CAB8A390062FC51 /* Preview Assets.xcassets */; };
 		224305E22CAB8A3A0062FC51 /* SeneParkingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305E12CAB8A3A0062FC51 /* SeneParkingTests.swift */; };
 		224305EC2CAB8A3A0062FC51 /* SeneParkingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */; };
 		224305EE2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */; };
+		22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C468D02CAD9FC900539A79 /* SignUp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,12 +38,12 @@
 		224305D02CAB8A370062FC51 /* SeneParkingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingApp.swift; sourceTree = "<group>"; };
 		224305D22CAB8A370062FC51 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		224305D42CAB8A390062FC51 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		224305D72CAB8A390062FC51 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		224305DD2CAB8A3A0062FC51 /* SeneParkingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SeneParkingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		224305E12CAB8A3A0062FC51 /* SeneParkingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingTests.swift; sourceTree = "<group>"; };
 		224305E72CAB8A3A0062FC51 /* SeneParkingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SeneParkingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITests.swift; sourceTree = "<group>"; };
 		224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		22C468D02CAD9FC900539A79 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,20 +94,12 @@
 		224305CF2CAB8A370062FC51 /* SeneParking */ = {
 			isa = PBXGroup;
 			children = (
+				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
 				224305D22CAB8A370062FC51 /* ContentView.swift */,
 				224305D42CAB8A390062FC51 /* Assets.xcassets */,
-				224305D62CAB8A390062FC51 /* Preview Content */,
 			);
 			path = SeneParking;
-			sourceTree = "<group>";
-		};
-		224305D62CAB8A390062FC51 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				224305D72CAB8A390062FC51 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		224305E02CAB8A3A0062FC51 /* SeneParkingTests */ = {
@@ -231,7 +223,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				224305D82CAB8A390062FC51 /* Preview Assets.xcassets in Resources */,
 				224305D52CAB8A390062FC51 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -258,6 +249,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				224305D32CAB8A370062FC51 /* ContentView.swift in Sources */,
+				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

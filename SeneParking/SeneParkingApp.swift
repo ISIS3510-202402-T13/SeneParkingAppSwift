@@ -12,6 +12,7 @@ struct SeneParkingApp: App {
     var body: some Scene {
         WindowGroup {
             SignInView()
+            RegisterView()
         }
     }
 }
