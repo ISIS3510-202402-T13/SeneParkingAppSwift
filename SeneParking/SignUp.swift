@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct RegisterView: View {
+struct SignUpView: View {
     @State private var firstName: String = ""
     @State private var lastName: String = ""
     @State private var email: String = ""
@@ -135,6 +135,6 @@ struct RegisterView: View {
 
 struct RegisterView_Previews: PreviewProvider {
     static var previews: some View {
-        RegisterView()
+        SignUpView()
     }
 }

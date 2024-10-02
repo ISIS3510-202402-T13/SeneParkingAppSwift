@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2218CAF42CADD776007E0EA9 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2218CAF32CADD776007E0EA9 /* SignIn.swift */; };
 		224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305D02CAB8A370062FC51 /* SeneParkingApp.swift */; };
-		224305D32CAB8A370062FC51 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305D22CAB8A370062FC51 /* ContentView.swift */; };
 		224305D52CAB8A390062FC51 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 224305D42CAB8A390062FC51 /* Assets.xcassets */; };
 		224305E22CAB8A3A0062FC51 /* SeneParkingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305E12CAB8A3A0062FC51 /* SeneParkingTests.swift */; };
 		224305EC2CAB8A3A0062FC51 /* SeneParkingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */; };
@@ -34,9 +34,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2218CAF32CADD776007E0EA9 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		224305CD2CAB8A370062FC51 /* SeneParking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeneParking.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		224305D02CAB8A370062FC51 /* SeneParkingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingApp.swift; sourceTree = "<group>"; };
-		224305D22CAB8A370062FC51 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		224305D42CAB8A390062FC51 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		224305DD2CAB8A3A0062FC51 /* SeneParkingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SeneParkingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		224305E12CAB8A3A0062FC51 /* SeneParkingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingTests.swift; sourceTree = "<group>"; };
@@ -96,7 +96,7 @@
 			children = (
 				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
-				224305D22CAB8A370062FC51 /* ContentView.swift */,
+				2218CAF32CADD776007E0EA9 /* SignIn.swift */,
 				224305D42CAB8A390062FC51 /* Assets.xcassets */,
 			);
 			path = SeneParking;
@@ -248,8 +248,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				224305D32CAB8A370062FC51 /* ContentView.swift in Sources */,
 				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
+				2218CAF42CADD776007E0EA9 /* SignIn.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
