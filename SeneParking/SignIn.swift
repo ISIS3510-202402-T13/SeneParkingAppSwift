@@ -3,7 +3,7 @@ import SwiftUI
 struct SignInView: View {
     @State private var mobileNumber: String = ""
     @State private var password: String = ""
-    @State private var login = false // State to track login status
+    @State private var login = false
     
     var body: some View {
         NavigationStack { // Wrap in NavigationStack
@@ -55,9 +55,11 @@ struct SignInView: View {
                     }
                     .padding(.bottom, 10)
                     
-                    Text("Forgotten password?")
-                        .foregroundColor(.white)
-                        .padding(.bottom, 20)
+                    NavigationLink(destination: ForgotPasswordView()) {
+                        Text("Forgot password?")
+                            .foregroundColor(.white)
+                            .padding(.bottom, 20)
+                    }
                     
                     // NavigationLink to RegisterView
                     NavigationLink(destination: SignUpView()) {
