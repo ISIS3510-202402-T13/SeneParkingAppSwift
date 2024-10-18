@@ -52,9 +52,11 @@ struct SignUpView: View {
                     
                     TermsOfServiceView()
                     
-                    RegisterButton {
-                        if validateAllFields() {
-                            registerUser()
+                    if !registrationSuccess {
+                        RegisterButton {
+                            if validateAllFields() {
+                                registerUser()
+                            }
                         }
                     }
                     
