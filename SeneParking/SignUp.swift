@@ -520,6 +520,9 @@ struct FormFields: View {
         if uniandesCode.isEmpty {
             uniandesCodeError = "Uniandes code cannot be empty."
             return false
+        } else if !uniandesCode.allSatisfy({ $0.isNumber }) {
+            uniandesCodeError = "Uniandes code must be numeric."
+            return false
         }
         uniandesCodeError = nil
         return true
