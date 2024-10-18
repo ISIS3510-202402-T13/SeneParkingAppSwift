@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2218CAF42CADD776007E0EA9 /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2218CAF32CADD776007E0EA9 /* SignIn.swift */; };
 		224224902CAE24B500A1B3AC /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2242248F2CAE24B400A1B3AC /* ForgotPasswordView.swift */; };
 		224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305D02CAB8A370062FC51 /* SeneParkingApp.swift */; };
 		224305D52CAB8A390062FC51 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 224305D42CAB8A390062FC51 /* Assets.xcassets */; };
@@ -15,6 +14,7 @@
 		224305EC2CAB8A3A0062FC51 /* SeneParkingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */; };
 		224305EE2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */; };
 		22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C468D02CAD9FC900539A79 /* SignUp.swift */; };
+		D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */; };
 		D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */; };
 		D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A222CAE076D00A2A550 /* MainMap.swift */; };
 /* End PBXBuildFile section */
@@ -37,7 +37,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2218CAF32CADD776007E0EA9 /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		2242248F2CAE24B400A1B3AC /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
 		224305CD2CAB8A370062FC51 /* SeneParking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SeneParking.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		224305D02CAB8A370062FC51 /* SeneParkingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingApp.swift; sourceTree = "<group>"; };
@@ -48,6 +47,8 @@
 		224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITests.swift; sourceTree = "<group>"; };
 		224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		22C468D02CAD9FC900539A79 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
+		D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensePlateRecognitionView.swift; sourceTree = "<group>"; };
+		D441141F2CC211BA00A5C702 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingLotDetail.swift; sourceTree = "<group>"; };
 		D44E7A222CAE076D00A2A550 /* MainMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -100,11 +101,12 @@
 		224305CF2CAB8A370062FC51 /* SeneParking */ = {
 			isa = PBXGroup;
 			children = (
+				D441141F2CC211BA00A5C702 /* Info.plist */,
 				D44E7A222CAE076D00A2A550 /* MainMap.swift */,
+				D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */,
 				D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */,
 				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
-				2218CAF32CADD776007E0EA9 /* SignIn.swift */,
 				2242248F2CAE24B400A1B3AC /* ForgotPasswordView.swift */,
 				224305D42CAB8A390062FC51 /* Assets.xcassets */,
 			);
@@ -260,7 +262,7 @@
 				224224902CAE24B500A1B3AC /* ForgotPasswordView.swift in Sources */,
 				D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */,
 				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
-				2218CAF42CADD776007E0EA9 /* SignIn.swift in Sources */,
+				D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
 				D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */,
 			);
@@ -421,8 +423,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SeneParking/Preview Content\"";
+				DEVELOPMENT_TEAM = QVP8TBKXVF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SeneParking/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera for license plate recognition.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -446,11 +451,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SeneParking/Preview Content\"";
+				DEVELOPMENT_TEAM = QVP8TBKXVF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SeneParking/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera for license plate recognition.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -463,6 +472,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Uniandes.SeneParking;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
