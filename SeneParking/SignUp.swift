@@ -18,6 +18,11 @@ struct SignUpView: View {
     @State private var uniandesCodeError: String? = nil
     @State private var passwordError: String? = nil
     
+    // Additional states for loading, success, or error
+    @State private var isLoading: Bool = false
+    @State private var registrationError: String? = nil
+    @State private var registrationSuccess: Bool = false
+    
     var body: some View {
         ZStack {
             BackgroundView()
@@ -49,8 +54,25 @@ struct SignUpView: View {
                     
                     RegisterButton {
                         if validateAllFields() {
-                            // Add registration action here
+                            registerUser()
                         }
+                    }
+                    
+                    if isLoading {
+                        ProgressView()
+                        .padding(.top, 10)
+                    }
+
+                    if let error = registrationError {
+                        Text(error)
+                        .foregroundColor(.white)
+                        .padding(.top, 10)
+                    }
+
+                    if registrationSuccess {
+                        Text("Registration successful!")
+                        .foregroundColor(.green)
+                        .padding(.top, 10)
                     }
                     
                     Spacer()
@@ -142,6 +164,65 @@ struct SignUpView: View {
                validateUniandesCode() &&
                validatePassword()
     }
+    
+    // Registration action with Firestore
+        func registerUser() {
+            isLoading = true
+            registrationError = nil
+            registrationSuccess = false
+
+            // Firestore expects fields to be inside a "fields" object
+                let userData: [String: Any] = [
+                    "fields": [
+                        "firstName": ["stringValue": firstName],
+                        "lastName": ["stringValue": lastName],
+                        "email": ["stringValue": email],
+                        "mobileNumber": ["stringValue": mobileNumber],
+                        "dateOfBirth": ["stringValue": dateOfBirth],
+                        "uniandesCode": ["stringValue": uniandesCode],
+                        "password": ["stringValue": password] // Should be encrypted or hashed in a real app
+                    ]
+                ]
+
+            guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/users") else {
+                registrationError = "Invalid URL"
+                isLoading = false
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: userData, options: [])
+                request.httpBody = jsonData
+            } catch {
+                registrationError = "Failed to encode user data"
+                isLoading = false
+                return
+            }
+
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    isLoading = false
+
+                    if let error = error {
+                        registrationError = "Registration failed: \(error.localizedDescription)"
+                        return
+                    }
+
+                    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                        registrationError = "Server error or invalid response."
+                        return
+                    }
+
+                    registrationSuccess = true
+                }
+            }
+
+            task.resume()
+        }
 }
 
 struct BackgroundView: View {
