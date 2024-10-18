@@ -91,6 +91,7 @@ struct SignInView: View {
             .navigationDestination(isPresented: $login) {
                 MainMapView()
             }
+            .navigationBarHidden(true)
         }
     }
     
