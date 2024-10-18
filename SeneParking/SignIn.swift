@@ -6,9 +6,11 @@ struct SignInView: View {
     @State private var login = false
     @State private var showLicensePlateRecognition = false
     
-    // Variables for validation
+    // Variables for validation and error handling
     @State private var mobileErrorMessage: String? = nil
     @State private var passwordErrorMessage: String? = nil
+    @State private var loginErrorMessage: String? = nil
+    @State private var isLoading: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -23,7 +25,7 @@ struct SignInView: View {
                     
                     Group {
                         // Mobile Number / ID Field and Error Message
-                        TextField("Mobile number or university ID", text: $mobileNumber)
+                        TextField("Mobile number", text: $mobileNumber)
                             .padding()
                             .background(Color.white)
                             .foregroundColor(Color.black)
@@ -53,7 +55,7 @@ struct SignInView: View {
                         // Log in Button
                         Button(action: {
                             if validateFields() {
-                                login = true
+                                attemptLogin()
                             }
                         }) {
                             Text("Log in")
@@ -85,6 +87,7 @@ struct SignInView: View {
                                         .stroke(Color.white, lineWidth: 2)
                                 )
                         }
+                        
                         Button(action: {
                             showLicensePlateRecognition = true
                         }) {
@@ -101,13 +104,24 @@ struct SignInView: View {
                         Spacer()
                     }
                     
+                    if let error = loginErrorMessage {
+                        Text(error)
+                            .foregroundColor(.white)
+                            .padding(.top, 10)
+                    }
+                    
+                    if isLoading {
+                        ProgressView()
+                            .padding(.top, 10)
+                    }
+                    
                     Spacer()
                 }
                 .padding(.horizontal, 30)
             }
             .navigationDestination(isPresented: $login) {
                 MainMapView()
-                }
+            }
             .navigationDestination(isPresented: $showLicensePlateRecognition) {
                 LicensePlateRecognitionView()
             }
@@ -118,13 +132,13 @@ struct SignInView: View {
     // MARK: - Validation Functions
     private func validateMobileNumber() -> Bool {
         if mobileNumber.isEmpty {
-            mobileErrorMessage = "Mobile number or ID cannot be empty."
+            mobileErrorMessage = "Mobile number cannot be empty."
             return false
         } else if !mobileNumber.allSatisfy({ $0.isNumber }) {
-            mobileErrorMessage = "Mobile number or ID must be numeric."
+            mobileErrorMessage = "Mobile number must be numeric."
             return false
         } else if mobileNumber.count > 10 {
-            mobileErrorMessage = "Mobile number or ID cannot exceed 10 digits."
+            mobileErrorMessage = "Mobile number cannot exceed 10 digits."
             return false
         }
         mobileErrorMessage = nil
@@ -146,6 +160,70 @@ struct SignInView: View {
     private func validateFields() -> Bool {
         return validateMobileNumber() && validatePassword()
     }
+    
+    // MARK: - Login Function
+    private func attemptLogin() {
+        isLoading = true
+        loginErrorMessage = nil
+
+        guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/users") else {
+            loginErrorMessage = "Invalid URL."
+            isLoading = false
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                isLoading = false
+
+                if let error = error {
+                    loginErrorMessage = "Login failed: \(error.localizedDescription)"
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    loginErrorMessage = "Server error or invalid response."
+                    return
+                }
+
+                guard let data = data else {
+                    loginErrorMessage = "No data received."
+                    return
+                }
+
+                do {
+                    let result = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    if let documents = result?["documents"] as? [[String: Any]] {
+                        var userFound = false
+                        
+                        // Loop through each user document to find matching mobileNumber and password
+                        for document in documents {
+                            if let fields = document["fields"] as? [String: Any],
+                               let mobileNumberField = (fields["mobileNumber"] as? [String: Any])?["stringValue"] as? String,
+                               let passwordField = (fields["password"] as? [String: Any])?["stringValue"] as? String {
+                                if mobileNumberField == mobileNumber && passwordField == password {
+                                    userFound = true
+                                    login = true // User authenticated, navigate to the main app view
+                                    break
+                                }
+                            }
+                        }
+                        
+                        if !userFound {
+                            loginErrorMessage = "Invalid mobile number or password."
+                        }
+                    } else {
+                        loginErrorMessage = "No users found."
+                    }
+                } catch {
+                    loginErrorMessage = "Failed to parse user data."
+                }
+            }
+        }
+
+        task.resume()
+    }
+
 }
 
 // MARK: - Subviews
