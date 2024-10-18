@@ -10,14 +10,14 @@ import MapKit
 import CoreLocation
 
 struct ParkingLot: Identifiable {
-    let id: Int
+    let id: String
     let name: String
     let coordinate: CLLocationCoordinate2D
     let availableSpots: Int
     let availableEVSpots: Int
-    let price: String
-    let openingTime: String
-    let closingTime: String
+    let farePerDay: Int
+    let openTime: String
+    let closeTime: String
 }
 
 struct MainMapView: View {
@@ -83,12 +83,13 @@ struct MainMapView: View {
                 }
             }
             .navigationBarHidden(true)
-            .onAppear(perform: loadParkingLots)
+            .onAppear(perform: fetchParkingLots)
         }
         .navigationBarHidden(true)
     }
     
-    func loadParkingLots() {
+    /* EXAMPLE PARKING LOTS
+     func loadParkingLots() {
         // In a real app, this would fetch data from your backend
         parkingLots = [
             ParkingLot(id: 1, name: "SantoDomingo building", coordinate: CLLocationCoordinate2D(latitude: 4.6020, longitude: -74.0660), availableSpots: 10, availableEVSpots: 2, price: "$16.000 - whole day", openingTime: "6:00 AM", closingTime: "10:00 PM"),
@@ -96,6 +97,7 @@ struct MainMapView: View {
             ParkingLot(id: 3, name: "Parqueadero Monserrate", coordinate: CLLocationCoordinate2D(latitude: 4.6000, longitude: -74.0640), availableSpots: 0, availableEVSpots: 0, price: "$10.000 - whole day", openingTime: "8:00 AM", closingTime: "8:00 PM")
         ]
     }
+     */
     
     func lotColor(for lot: ParkingLot) -> Color {
         if lot.availableEVSpots > 0 {
@@ -106,6 +108,68 @@ struct MainMapView: View {
             return .red
         }
     }
+
+    func fetchParkingLots() {
+        guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots") else {
+            print("Invalid URL")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching parking lots: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let documents = json["documents"] as? [[String: Any]] {
+                    let newParkingLots = documents.compactMap { document -> ParkingLot? in
+                        guard let fields = document["fields"] as? [String: Any],
+                              let name = fields["name"] as? [String: String],
+                              let latitude = fields["latitude"] as? [String: Double],
+                              let longitude = fields["longitude"] as? [String: Double],
+                              let availableSpots = fields["availableSpots"] as? [String: String],
+                              let availableEVSpots = fields["available_ev_spots"] as? [String: String],
+                              let farePerDay = fields["farePerDay"] as? [String: String],
+                              let openTime = fields["open_time"] as? [String: String],
+                              let closeTime = fields["close_time"] as? [String: String] else {
+                            return nil
+                        }
+                        print("Open Time: \(openTime)")
+
+                        let dateFormatter = ISO8601DateFormatter()
+                        
+                        return ParkingLot(
+                            id: document["name"] as? String ?? UUID().uuidString,
+                            name: name["stringValue"] ?? "",
+                            coordinate: CLLocationCoordinate2D(
+                                latitude: latitude["doubleValue"] ?? 0,
+                                longitude: longitude["doubleValue"] ?? 0
+                            ),
+                            availableSpots: Int(availableSpots["integerValue"] ?? "") ?? 0,
+                            availableEVSpots: Int(availableEVSpots["integerValue"] ?? "") ?? 0,
+                            farePerDay: Int(farePerDay["integerValue"] ?? "") ?? 0,
+                            openTime: openTime["stringValue"] ?? "N/A",
+                            closeTime: closeTime["stringValue"] ?? "N/A"
+                        )
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.parkingLots = newParkingLots
+                    }
+                }
+            } catch {
+                print("Error parsing JSON: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+
 }
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
@@ -123,11 +187,5 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         self.location = location
-    }
-}
-
-struct MainMapView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainMapView()
     }
 }

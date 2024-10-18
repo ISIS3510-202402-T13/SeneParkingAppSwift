@@ -21,7 +21,6 @@ struct ParkingLotDetailView: View {
                 .cornerRadius(10)
                 
                 Button(action: {
-                    // Action to navigate to the parking lot using Maps app
                     let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: parkingLot.coordinate))
                     mapItem.name = parkingLot.name
                     mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
@@ -37,13 +36,19 @@ struct ParkingLotDetailView: View {
                 
                 InfoRow(title: "Available Spots", value: "\(parkingLot.availableSpots)")
                 InfoRow(title: "Available EV Spots", value: "\(parkingLot.availableEVSpots)")
-                InfoRow(title: "Price", value: parkingLot.price)
-                InfoRow(title: "Opening Hours", value: "\(parkingLot.openingTime) - \(parkingLot.closingTime)")
+                InfoRow(title: "Fare per Day", value: "COP \(parkingLot.farePerDay)")
+                InfoRow(title: "Opening Hours", value: "\(parkingLot.openTime) - \(parkingLot.closeTime)")
             }
             .padding()
         }
         .navigationTitle("Parking Lot Details")
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    func formatTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 
@@ -57,14 +62,6 @@ struct InfoRow: View {
                 .fontWeight(.semibold)
             Spacer()
             Text(value)
-        }
-    }
-}
-
-struct ParkingLotDetail_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            ParkingLotDetailView(parkingLot: ParkingLot(id: 1, name: "SantoDomingo building", coordinate: CLLocationCoordinate2D(latitude: 4.6020, longitude: -74.0660), availableSpots: 10, availableEVSpots: 2, price: "$5/hour", openingTime: "6:00 AM", closingTime: "10:00 PM"))
         }
     }
 }
