@@ -26,6 +26,7 @@ struct SignInView: View {
                         TextField("Mobile number or university ID", text: $mobileNumber)
                             .padding()
                             .background(Color.white)
+                            .foregroundColor(Color.black)
                             .cornerRadius(10)
                             .padding(.bottom, 5)
                             .onChange(of: mobileNumber) { _ in
@@ -38,6 +39,7 @@ struct SignInView: View {
                         SecureField("Password", text: $password)
                             .padding()
                             .background(Color.white)
+                            .foregroundColor(Color.black)
                             .cornerRadius(10)
                             .padding(.bottom, 5)
                             .onChange(of: password) { _ in
