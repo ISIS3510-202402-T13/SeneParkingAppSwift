@@ -342,7 +342,30 @@ struct FormFields: View {
         } else if !email.contains("@") {
             emailError = "Invalid email format."
             return false
+        } else {
+            // Regular expression for email format
+            let emailPattern = #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"#
+            let regex = NSPredicate(format: "SELF MATCHES %@", emailPattern)
+            
+            if !regex.evaluate(with: email) {
+                emailError = "Invalid email format."
+                return false
+            }
+            
+            // Check for allowed domains
+            let allowedDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"]
+            
+            guard let domain = email.split(separator: "@").last?.lowercased() else {
+                emailError = "Invalid email domain."
+                return false
+            }
+            
+            if !allowedDomains.contains(String(domain)) {
+                emailError = "Email domain not allowed."
+                return false
+            }
         }
+        
         emailError = nil
         return true
     }
@@ -360,12 +383,47 @@ struct FormFields: View {
     }
     
     private func validateDateOfBirth() -> Bool {
+        let datePattern = #"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"#
+        let regex = NSPredicate(format: "SELF MATCHES %@", datePattern)
+        
         if dateOfBirth.isEmpty {
             dateOfBirthError = "Date of birth cannot be empty."
             return false
+        } else if !regex.evaluate(with: dateOfBirth) {
+            dateOfBirthError = "Date of birth must be in the format dd/mm/yyyy."
+            return false
+        } else {
+            let components = dateOfBirth.split(separator: "/").map { Int($0) }
+            guard let day = components[0], let month = components[1], let year = components[2] else {
+                dateOfBirthError = "Invalid date."
+                return false
+            }
+            
+            // Check for valid date values
+            if day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 {
+                dateOfBirthError = "Invalid date values."
+                return false
+            }
+            
+            // Check for days in month
+            if (month == 2 && day > 29) || (month == 2 && day == 29 && !isLeapYear(year: year)) {
+                dateOfBirthError = "February has at most 28 days."
+                return false
+            }
+            
+            if (month == 4 || month == 6 || month == 9 || month == 11) && day > 30 {
+                dateOfBirthError = "This month has at most 30 days."
+                return false
+            }
         }
+        
         dateOfBirthError = nil
         return true
+    }
+
+    // Helper function to check for leap years
+    private func isLeapYear(year: Int) -> Bool {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
     
     private func validateUniandesCode() -> Bool {
