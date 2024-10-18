@@ -10,16 +10,23 @@ import AVFoundation
 import Vision
 
 struct LicensePlateRecognitionView: View {
+    @Environment(\.presentationMode) var presentationMode
     @StateObject private var camera = CameraModel()
     @State private var recognizedText = ""
     @State private var parkingStatus = ""
     
     var body: some View {
-        VStack {
-            ZStack {
-                CameraPreview(camera: camera)
-                    .ignoresSafeArea()
-                VStack {
+        ZStack {
+            Color.black.edgesIgnoringSafeArea(.all) // Black background
+            
+            CameraPreview(camera: camera)
+                .mask(CameraPreviewMask())
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                Spacer()
+                
+                HStack {
                     Spacer()
                     Button(action: {
                         camera.takePicture()
@@ -28,12 +35,38 @@ struct LicensePlateRecognitionView: View {
                             .font(.largeTitle)
                             .padding()
                             .background(Color.white)
+                            .foregroundColor(.black)
                             .clipShape(Circle())
                     }
+                    Spacer()
                 }
+                .padding(.bottom)
+                
+                Text("Recognized Plate: \(recognizedText)")
+                    .foregroundColor(.white)
+                    .padding()
+                
+                Text("Status: \(parkingStatus)")
+                    .foregroundColor(.white)
+                    .padding()
             }
-            Text("Recognized Plate: \(recognizedText)")
-            Text("Status: \(parkingStatus)")
+            
+            VStack {
+                HStack {
+                    Button(action: {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .clipShape(Circle())
+                    }
+                    Spacer()
+                }
+                Spacer()
+            }
+            .padding()
         }
         .onReceive(camera.$capturedImage) { image in
             if let image = image {
@@ -154,12 +187,23 @@ struct CameraPreview: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: UIScreen.main.bounds)
         camera.preview = AVCaptureVideoPreviewLayer(session: camera.session)
-        camera.preview.frame = view.frame
+        camera.preview.frame = view.bounds
         camera.preview.videoGravity = .resizeAspectFill
         view.layer.addSublayer(camera.preview)
         camera.session.startRunning()
         return view
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {}
+    func updateUIView(_ uiView: UIView, context: Context) {
+        camera.preview.frame = uiView.bounds
+    }
+}
+
+struct CameraPreviewMask: Shape {
+    func path(in rect: CGRect) -> Path {
+        let heightFraction: CGFloat = 0.3 // Adjust this value to change the height of the camera view
+        let yOffset = (rect.height - (rect.height * heightFraction)) / 2
+        let maskRect = CGRect(x: 0, y: yOffset, width: rect.width, height: rect.height * heightFraction)
+        return Path(maskRect)
+    }
 }

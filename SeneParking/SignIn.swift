@@ -1,3 +1,10 @@
+//
+//  SignIn.swift
+//  SeneParking
+//
+//  Created by Amalia Lopez on 18/10/24.
+//
+
 import SwiftUI
 
 struct SignInView: View {
@@ -83,6 +90,7 @@ struct SignInView: View {
                                         .stroke(Color.white, lineWidth: 2)
                                 )
                         }
+                        
                         Button(action: {
                             showLicensePlateRecognition = true
                         }) {
@@ -98,21 +106,17 @@ struct SignInView: View {
                         
                         Spacer()
                     }
-                    
-                    Spacer()
+                    .padding(.horizontal, 30)
                 }
-                .padding(.horizontal, 30)
-            }
-            .navigationDestination(isPresented: $login) {
-                MainMapView()
-            .navigationDestination(isPresented: $showLicensePlateRecognition) {
-                LicensePlateRecognitionView()
+                .navigationDestination(isPresented: $login) {
+                    MainMapView()
+                }
+                .navigationDestination(isPresented: $showLicensePlateRecognition) {
+                    LicensePlateRecognitionView()
                 }
             }
-            .navigationBarHidden(true)
         }
     }
-    
     // MARK: - Validation Functions
     private func validateMobileNumber() -> Bool {
         if mobileNumber.isEmpty {
