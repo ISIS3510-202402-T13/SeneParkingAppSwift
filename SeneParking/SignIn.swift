@@ -4,6 +4,7 @@ struct SignInView: View {
     @State private var mobileNumber: String = ""
     @State private var password: String = ""
     @State private var login = false
+    @State private var showLicensePlateRecognition = false
     
     // Variables for validation
     @State private var mobileErrorMessage: String? = nil
@@ -82,6 +83,20 @@ struct SignInView: View {
                                         .stroke(Color.white, lineWidth: 2)
                                 )
                         }
+                        Button(action: {
+                            showLicensePlateRecognition = true
+                        }) {
+                            Text("I'm a Parking Lot Owner")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                        }
+                        .padding(.top, 20)
+                        
+                        Spacer()
                     }
                     
                     Spacer()
@@ -90,6 +105,9 @@ struct SignInView: View {
             }
             .navigationDestination(isPresented: $login) {
                 MainMapView()
+            .navigationDestination(isPresented: $showLicensePlateRecognition) {
+                LicensePlateRecognitionView()
+                }
             }
             .navigationBarHidden(true)
         }
