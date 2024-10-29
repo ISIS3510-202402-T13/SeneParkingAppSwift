@@ -62,7 +62,7 @@ struct MainMapView: View {
                     HStack {
                         // Legend
                         VStack(alignment: .leading, spacing: 5) {
-                            HStack { Circle().fill(.blue).frame(width: 10, height: 10); Text("Available EV spots") }
+                            HStack { Circle().fill(.blue).frame(width: 10, height: 10); Text("Available electric car spots") }
                             HStack { Circle().fill(.green).frame(width: 10, height: 10); Text("Available spots") }
                             HStack { Circle().fill(.red).frame(width: 10, height: 10); Text("Full") }
                         }
@@ -73,7 +73,7 @@ struct MainMapView: View {
                         Spacer()
                         
                         // EV Toggle
-                        Toggle("EV Only", isOn: $showEVOnly)
+                        Toggle("Electric car spots", isOn: $showEVOnly)
                             .padding()
                             .background(Color.white.opacity(0.8))
                             .cornerRadius(10)
@@ -92,12 +92,12 @@ struct MainMapView: View {
      func loadParkingLots() {
         // In a real app, this would fetch data from your backend
         parkingLots = [
-            ParkingLot(id: 1, name: "SantoDomingo building", coordinate: CLLocationCoordinate2D(latitude: 4.6020, longitude: -74.0660), availableSpots: 10, availableEVSpots: 2, price: "$16.000 - whole day", openingTime: "6:00 AM", closingTime: "10:00 PM"),
-            ParkingLot(id: 2, name: "Parking Way", coordinate: CLLocationCoordinate2D(latitude: 4.6010, longitude: -74.0650), availableSpots: 5, availableEVSpots: 0, price: "$.3000/hour", openingTime: "7:00 AM", closingTime: "9:00 PM"),
-            ParkingLot(id: 3, name: "Parqueadero Monserrate", coordinate: CLLocationCoordinate2D(latitude: 4.6000, longitude: -74.0640), availableSpots: 0, availableEVSpots: 0, price: "$10.000 - whole day", openingTime: "8:00 AM", closingTime: "8:00 PM")
+            ParkingLot(id: "1", name: "SantoDomingo building", coordinate: CLLocationCoordinate2D(latitude: 4.6020, longitude: -74.0660), availableSpots: 10, availableEVSpots: 2, farePerDay: 16000, openTime: "10:50 PM", closeTime: "10:00 PM"),
+            ParkingLot(id: "2", name: "Parking Way", coordinate: CLLocationCoordinate2D(latitude: 4.6010, longitude: -74.0650), availableSpots: 5, availableEVSpots: 0, farePerDay: 3000, openTime: "10:52 PM", closeTime: "9:00 PM"),
+            ParkingLot(id: "3", name: "Parqueadero Monserrate", coordinate: CLLocationCoordinate2D(latitude: 4.6000, longitude: -74.0640), availableSpots: 0, availableEVSpots: 0, farePerDay: 10000, openTime: "10:51 PM", closeTime: "8:00 PM")
         ]
     }
-     */
+    */
     
     func lotColor(for lot: ParkingLot) -> Color {
         if lot.availableEVSpots > 0 {

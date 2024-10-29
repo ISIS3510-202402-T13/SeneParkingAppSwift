@@ -15,11 +15,17 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 @main
 struct SeneParkingApp: App {
+    @StateObject private var notificationManager = ParkingNotificationManager.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         WindowGroup {
             SignInView()
+            .onAppear
+            {
+                // Request notification permission when app launches
+                notificationManager.requestPermission()
+            }
         }
     }
 }
