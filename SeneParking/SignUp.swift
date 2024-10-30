@@ -53,7 +53,13 @@ struct SignUpView: View {
                     TermsOfServiceView()
                     
                     if !registrationSuccess {
-                        RegisterButton {
+                        RegisterButton (firstNameError: $firstNameError,
+                                        lastNameError: $lastNameError,
+                                        emailError: $emailError,
+                                        mobileNumberError: $mobileNumberError,
+                                        dateOfBirthError: $dateOfBirthError,
+                                        uniandesCodeError: $uniandesCodeError,
+                                        passwordError: $passwordError) {
                             if validateAllFields() {
                                 registerUser()
                             }
@@ -119,8 +125,8 @@ struct SignUpView: View {
         if mobileNumber.isEmpty {
             mobileNumberError = "Mobile number cannot be empty."
             return false
-        } else if mobileNumber.count > 10 || !mobileNumber.allSatisfy({ $0.isNumber }) {
-            mobileNumberError = "Mobile number must be numeric and max 10 digits."
+        } else if mobileNumber.count > 10 || mobileNumber.count < 10 || !mobileNumber.allSatisfy({ $0.isNumber }) {
+            mobileNumberError = "Mobile number must be numeric and 10 digits."
             return false
         }
         mobileNumberError = nil
@@ -139,6 +145,9 @@ struct SignUpView: View {
     func validateUniandesCode() -> Bool {
         if uniandesCode.isEmpty {
             uniandesCodeError = "Uniandes code cannot be empty."
+            return false
+        } else if uniandesCode.count > 10 || uniandesCode.count < 6 || !uniandesCode.allSatisfy({ $0.isNumber }) {
+            uniandesCodeError = "Uniandes code should be between 6 - 10 numbers."
             return false
         }
         uniandesCodeError = nil
@@ -182,7 +191,7 @@ struct SignUpView: View {
                         "mobileNumber": ["stringValue": mobileNumber],
                         "dateOfBirth": ["stringValue": dateOfBirth],
                         "uniandesCode": ["stringValue": uniandesCode],
-                        "password": ["stringValue": password] // Should be encrypted or hashed in a real app
+                        "password": ["stringValue": password]
                     ]
                 ]
 
@@ -350,13 +359,20 @@ struct FormFields: View {
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
-                .onChange(of: mobileNumber, perform: { _ in validateMobileNumber() })
+                .onChange(of: mobileNumber) { newValue in
+                    if newValue.count > 10 {
+                        mobileNumber = String(newValue.prefix(10))
+                    }
+                    
+                    validateMobileNumber()
+                }
             Text(mobileNumberError ?? " ")
                 .foregroundColor(.white)
                 .font(.footnote)
                 .frame(height: 10)
         }
     }
+
     
     private func dateOfBirthField() -> some View {
         VStack {
@@ -382,7 +398,13 @@ struct FormFields: View {
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
-                .onChange(of: uniandesCode, perform: { _ in validateUniandesCode() })
+                .onChange(of: uniandesCode) { newValue in
+                    if newValue.count > 10 {
+                        uniandesCode = String(newValue.prefix(10))
+                    }
+                    
+                    validateUniandesCode()
+                }
             Text(uniandesCodeError ?? " ")
                 .foregroundColor(.white)
                 .font(.footnote)
@@ -464,8 +486,8 @@ struct FormFields: View {
         if mobileNumber.isEmpty {
             mobileNumberError = "Mobile number cannot be empty."
             return false
-        } else if mobileNumber.count > 10 || !mobileNumber.allSatisfy({ $0.isNumber }) {
-            mobileNumberError = "Mobile number must be numeric and max 10 digits."
+        } else if mobileNumber.count > 10 || mobileNumber.count < 10 || !mobileNumber.allSatisfy({ $0.isNumber }) {
+            mobileNumberError = "Mobile number must be numeric and 10 digits."
             return false
         }
         mobileNumberError = nil
@@ -516,12 +538,12 @@ struct FormFields: View {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
     
-    private func validateUniandesCode() -> Bool {
+    func validateUniandesCode() -> Bool {
         if uniandesCode.isEmpty {
             uniandesCodeError = "Uniandes code cannot be empty."
             return false
-        } else if !uniandesCode.allSatisfy({ $0.isNumber }) {
-            uniandesCodeError = "Uniandes code must be numeric."
+        } else if uniandesCode.count > 10 || uniandesCode.count < 6 || !uniandesCode.allSatisfy({ $0.isNumber }) {
+            uniandesCodeError = "Uniandes code should be between 6 - 10 numbers."
             return false
         }
         uniandesCodeError = nil
@@ -552,6 +574,15 @@ struct TermsOfServiceView: View {
 }
 
 struct RegisterButton: View {
+    
+    @Binding var firstNameError: String?
+    @Binding var lastNameError: String?
+    @Binding var emailError: String?
+    @Binding var mobileNumberError: String?
+    @Binding var dateOfBirthError: String?
+    @Binding var uniandesCodeError: String?
+    @Binding var passwordError: String?
+    
     var action: () -> Void
     
     var body: some View {
@@ -568,11 +599,16 @@ struct RegisterButton: View {
         .disabled(!validateAllFields()) // Disable if validation fails
     }
     
-    // Example validation function to be replaced with actual logic
     func validateAllFields() -> Bool {
-        return true
+        firstNameError == nil &&
+        lastNameError == nil &&
+        emailError == nil &&
+        mobileNumberError == nil &&
+        dateOfBirthError == nil &&
+        uniandesCodeError == nil &&
+        passwordError == nil
+        }
     }
-}
 
 struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
