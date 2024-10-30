@@ -1,12 +1,14 @@
 import SwiftUI
 import MapKit
 import UserNotifications
+import Combine
 
 struct ParkingLotDetailView: View {
     let parkingLot: ParkingLot
     @State private var notificationEnabled = false
     @StateObject private var notificationManager = ParkingNotificationManager.shared
-      
+    @StateObject private var reservationManager = ParkingReservationManager()
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -35,6 +37,12 @@ struct ParkingLotDetailView: View {
                         .padding()
                         .background(Color.blue)
                         .cornerRadius(10)
+                }
+                
+                // Reservation Section
+                if parkingLot.availableSpots > 0
+                {
+                    reservationSection
                 }
                 
                 Button(action: {
@@ -80,6 +88,38 @@ struct ParkingLotDetailView: View {
         .navigationTitle("Parking Lot Details")
         .navigationBarTitleDisplayMode(.inline)
     }
+    
+    // Reservation Section View
+    private var reservationSection: some View
+    {
+        VStack {
+            if case .success(let message) = reservationManager.reservationStatus {
+                Text(message)
+                    .foregroundColor(.green)
+                    .padding()
+            } else if case .failure(let message) = reservationManager.reservationStatus {
+                Text(message)
+                    .foregroundColor(.red)
+                    .padding()
+            }
+            
+            Button(action: {
+                reservationManager.makeReservation(parkingLot: parkingLot, duration: 3600) // 1 hour
+            }) {
+                HStack {
+                    Image(systemName: "calendar.badge.plus")
+                    Text(reservationManager.isReserving ? "Processing..." : "Reserve Spot")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(reservationManager.isReserving ? Color.gray : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+            .disabled(reservationManager.isReserving)
+        }
+    }
+        
     
     // BORRAR DESPUES DEL VIVA VOCE
     func testRealNotification() {

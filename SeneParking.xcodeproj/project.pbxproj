@@ -19,6 +19,7 @@
 		D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */; };
 		D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44E7A222CAE076D00A2A550 /* MainMap.swift */; };
 		D48F21862CD08B4A009A4189 /* ParkingNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */; };
+		D48F21892CD1E7A6009A4189 /* ParkingReservationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D48F21882CD1E7A5009A4189 /* ParkingReservationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,7 @@
 		D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingLotDetail.swift; sourceTree = "<group>"; };
 		D44E7A222CAE076D00A2A550 /* MainMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMap.swift; sourceTree = "<group>"; };
 		D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingNotificationManager.swift; sourceTree = "<group>"; };
+		D48F21882CD1E7A5009A4189 /* ParkingReservationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingReservationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,15 +107,16 @@
 		224305CF2CAB8A370062FC51 /* SeneParking */ = {
 			isa = PBXGroup;
 			children = (
-				D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */,
 				D441141F2CC211BA00A5C702 /* Info.plist */,
-				D43498762CC227B200E807ED /* SignIn.swift */,
-				D44E7A222CAE076D00A2A550 /* MainMap.swift */,
-				D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */,
-				D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */,
-				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
+				D43498762CC227B200E807ED /* SignIn.swift */,
+				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				2242248F2CAE24B400A1B3AC /* ForgotPasswordView.swift */,
+				D44E7A222CAE076D00A2A550 /* MainMap.swift */,
+				D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */,
+				D48F21882CD1E7A5009A4189 /* ParkingReservationManager.swift */,
+				D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */,
+				D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */,
 				224305D42CAB8A390062FC51 /* Assets.xcassets */,
 			);
 			path = SeneParking;
@@ -275,6 +278,7 @@
 				D43498772CC227B500E807ED /* SignIn.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
 				D44E7A212CADE53000A2A550 /* ParkingLotDetail.swift in Sources */,
+				D48F21892CD1E7A6009A4189 /* ParkingReservationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
