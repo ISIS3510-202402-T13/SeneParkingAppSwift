@@ -31,7 +31,11 @@ struct SignInView: View {
                             .foregroundColor(Color.black)
                             .cornerRadius(10)
                             .padding(.bottom, 5)
-                            .onChange(of: mobileNumber) { _ in
+                            .onChange(of: mobileNumber) { newValue in
+                                if newValue.count > 10 {
+                                    mobileNumber = String(newValue.prefix(10))
+                                }
+                                
                                 validateMobileNumber()
                             }
                         
@@ -67,6 +71,13 @@ struct SignInView: View {
                         }
                         .padding(.bottom, 10)
                         .disabled(!validateFields()) // Disable the button if fields are invalid
+                        
+                        if let error = loginErrorMessage {
+                            Text(error)
+                                .foregroundColor(.white)
+                                .padding(.top, 10)
+                                .padding(.bottom, 10)
+                        }
                         
                         // Forgot Password Link
                         NavigationLink(destination: ForgotPasswordView()) {
@@ -104,12 +115,6 @@ struct SignInView: View {
                         Spacer()
                     }
                     
-                    if let error = loginErrorMessage {
-                        Text(error)
-                            .foregroundColor(.white)
-                            .padding(.top, 10)
-                    }
-                    
                     if isLoading {
                         ProgressView()
                             .padding(.top, 10)
@@ -137,8 +142,8 @@ struct SignInView: View {
         } else if !mobileNumber.allSatisfy({ $0.isNumber }) {
             mobileErrorMessage = "Mobile number must be numeric."
             return false
-        } else if mobileNumber.count > 10 {
-            mobileErrorMessage = "Mobile number cannot exceed 10 digits."
+        } else if mobileNumber.count != 10 {
+            mobileErrorMessage = "Mobile number must be 10 digits."
             return false
         }
         mobileErrorMessage = nil
