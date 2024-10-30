@@ -5,7 +5,7 @@ struct SignUpView: View {
     @State private var lastName: String = ""
     @State private var email: String = ""
     @State private var mobileNumber: String = ""
-    @State private var dateOfBirth: String = ""
+    @State private var dateOfBirth: Date = Date()
     @State private var uniandesCode: String = ""
     @State private var password: String = ""
     
@@ -22,6 +22,13 @@ struct SignUpView: View {
     @State private var isLoading: Bool = false
     @State private var registrationError: String? = nil
     @State private var registrationSuccess: Bool = false
+    
+    // Date formatter
+        private var dateFormatter: DateFormatter {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yyyy"
+            return formatter
+        }
     
     var body: some View {
         ZStack {
@@ -133,14 +140,28 @@ struct SignUpView: View {
         return true
     }
     
-    func validateDateOfBirth() -> Bool {
-        if dateOfBirth.isEmpty {
-            dateOfBirthError = "Date of birth cannot be empty."
+    private func validateDateOfBirth() -> Bool {
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: dateOfBirth, to: Date())
+        let age = ageComponents.year ?? 0
+        
+        if age < 16 {
+            dateOfBirthError = "You must be at least 16 years old."
             return false
         }
+        
         dateOfBirthError = nil
         return true
     }
+    
+//    func validateDateOfBirth() -> Bool {
+//        if dateOfBirth.isEmpty {
+//            dateOfBirthError = "Date of birth cannot be empty."
+//            return false
+//        }
+//        dateOfBirthError = nil
+//        return true
+//    }
     
     func validateUniandesCode() -> Bool {
         if uniandesCode.isEmpty {
@@ -181,6 +202,8 @@ struct SignUpView: View {
             isLoading = true
             registrationError = nil
             registrationSuccess = false
+            
+            let formattedDate = dateFormatter.string(from: dateOfBirth)
 
             // Firestore expects fields to be inside a "fields" object
                 let userData: [String: Any] = [
@@ -189,7 +212,7 @@ struct SignUpView: View {
                         "lastName": ["stringValue": lastName],
                         "email": ["stringValue": email],
                         "mobileNumber": ["stringValue": mobileNumber],
-                        "dateOfBirth": ["stringValue": dateOfBirth],
+                        "dateOfBirth": ["stringValue": formattedDate],
                         "uniandesCode": ["stringValue": uniandesCode],
                         "password": ["stringValue": password]
                     ]
@@ -277,7 +300,7 @@ struct FormFields: View {
     @Binding var lastName: String
     @Binding var email: String
     @Binding var mobileNumber: String
-    @Binding var dateOfBirth: String
+    @Binding var dateOfBirth: Date
     @Binding var uniandesCode: String
     @Binding var password: String
     
@@ -375,20 +398,25 @@ struct FormFields: View {
 
     
     private func dateOfBirthField() -> some View {
-        VStack {
-            TextField("Date of birth", text: $dateOfBirth)
+        VStack(alignment: .leading) {
+            DatePicker("Date of birth", selection: $dateOfBirth, displayedComponents: .date)
                 .padding()
                 .background(Color.white)
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
                 .onChange(of: dateOfBirth, perform: { _ in validateDateOfBirth() })
-            Text(dateOfBirthError ?? " ")
-                .foregroundColor(.white)
-                .font(.footnote)
-                .frame(height: 10)
+            HStack {
+                Spacer()
+                Text(dateOfBirthError ?? " ")
+                    .foregroundColor(.white)
+                    .font(.footnote)
+                Spacer()
+            }
+            .frame(height: 10)
         }
     }
+
     
     private func uniandesCodeField() -> some View {
         VStack {
@@ -495,43 +523,57 @@ struct FormFields: View {
     }
     
     private func validateDateOfBirth() -> Bool {
-        let datePattern = #"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"#
-        let regex = NSPredicate(format: "SELF MATCHES %@", datePattern)
+        let calendar = Calendar.current
+        let ageComponents = calendar.dateComponents([.year], from: dateOfBirth, to: Date())
+        let age = ageComponents.year ?? 0
         
-        if dateOfBirth.isEmpty {
-            dateOfBirthError = "Date of birth cannot be empty."
+        if age < 16 {
+            dateOfBirthError = "You must be at least 16 years old."
             return false
-        } else if !regex.evaluate(with: dateOfBirth) {
-            dateOfBirthError = "Date of birth must be in the format dd/mm/yyyy."
-            return false
-        } else {
-            let components = dateOfBirth.split(separator: "/").map { Int($0) }
-            guard let day = components[0], let month = components[1], let year = components[2] else {
-                dateOfBirthError = "Invalid date."
-                return false
-            }
-            
-            // Check for valid date values
-            if day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 {
-                dateOfBirthError = "Invalid date values."
-                return false
-            }
-            
-            // Check for days in month
-            if (month == 2 && day > 29) || (month == 2 && day == 29 && !isLeapYear(year: year)) {
-                dateOfBirthError = "February has at most 28 days."
-                return false
-            }
-            
-            if (month == 4 || month == 6 || month == 9 || month == 11) && day > 30 {
-                dateOfBirthError = "This month has at most 30 days."
-                return false
-            }
         }
         
         dateOfBirthError = nil
         return true
     }
+    
+//    private func validateDateOfBirth() -> Bool {
+//        let datePattern = #"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"#
+//        let regex = NSPredicate(format: "SELF MATCHES %@", datePattern)
+//
+//        if dateOfBirth.isEmpty {
+//            dateOfBirthError = "Date of birth cannot be empty."
+//            return false
+//        } else if !regex.evaluate(with: dateOfBirth) {
+//            dateOfBirthError = "Date of birth must be in the format dd/mm/yyyy."
+//            return false
+//        } else {
+//            let components = dateOfBirth.split(separator: "/").map { Int($0) }
+//            guard let day = components[0], let month = components[1], let year = components[2] else {
+//                dateOfBirthError = "Invalid date."
+//                return false
+//            }
+//
+//            // Check for valid date values
+//            if day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 {
+//                dateOfBirthError = "Invalid date values."
+//                return false
+//            }
+//
+//            // Check for days in month
+//            if (month == 2 && day > 29) || (month == 2 && day == 29 && !isLeapYear(year: year)) {
+//                dateOfBirthError = "February has at most 28 days."
+//                return false
+//            }
+//
+//            if (month == 4 || month == 6 || month == 9 || month == 11) && day > 30 {
+//                dateOfBirthError = "This month has at most 30 days."
+//                return false
+//            }
+//        }
+//
+//        dateOfBirthError = nil
+//        return true
+//    }
 
     // Helper function to check for leap years
     private func isLeapYear(year: Int) -> Bool {
