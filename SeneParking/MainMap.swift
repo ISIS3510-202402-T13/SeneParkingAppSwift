@@ -24,15 +24,16 @@ struct MainMapView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var showEVOnly = false
     @State private var parkingLots: [ParkingLot] = []
+    @State private var cachedParkingLots: [ParkingLot] = [] // Cache variable
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 4.6015, longitude: -74.0655), // Universidad de los Andes
+        center: CLLocationCoordinate2D(latitude: 4.6015, longitude: -74.0655),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
-    
+
     var filteredParkingLots: [ParkingLot] {
         showEVOnly ? parkingLots.filter { $0.availableEVSpots > 0 } : parkingLots
     }
-    
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -76,7 +77,6 @@ struct MainMapView: View {
                         Toggle("Electric car spots", isOn: $showEVOnly)
                             .onChange(of: showEVOnly) { newValue in
                                 DispatchQueue.main.async {
-                                    // Only update the counter if the toggle is turned on
                                     if newValue {
                                         incrementWeekdayCounter()
                                     }
@@ -95,18 +95,7 @@ struct MainMapView: View {
         }
         .navigationBarHidden(true)
     }
-    
-    /* EXAMPLE PARKING LOTS
-     func loadParkingLots() {
-        // In a real app, this would fetch data from your backend
-        parkingLots = [
-            ParkingLot(id: "1", name: "SantoDomingo building", coordinate: CLLocationCoordinate2D(latitude: 4.6020, longitude: -74.0660), availableSpots: 10, availableEVSpots: 2, farePerDay: 16000, openTime: "10:50 PM", closeTime: "10:00 PM"),
-            ParkingLot(id: "2", name: "Parking Way", coordinate: CLLocationCoordinate2D(latitude: 4.6010, longitude: -74.0650), availableSpots: 5, availableEVSpots: 0, farePerDay: 3000, openTime: "10:52 PM", closeTime: "9:00 PM"),
-            ParkingLot(id: "3", name: "Parqueadero Monserrate", coordinate: CLLocationCoordinate2D(latitude: 4.6000, longitude: -74.0640), availableSpots: 0, availableEVSpots: 0, farePerDay: 10000, openTime: "10:51 PM", closeTime: "8:00 PM")
-        ]
-    }
-    */
-    
+
     func incrementWeekdayCounter() {
         // Get the current day of the week in English and capitalize it
         let dateFormatter = DateFormatter()
@@ -185,7 +174,7 @@ struct MainMapView: View {
             }
         }.resume()
     }
-    
+
     func lotColor(for lot: ParkingLot) -> Color {
         if lot.availableEVSpots > 0 {
             return .blue
@@ -201,18 +190,22 @@ struct MainMapView: View {
             print("Invalid URL")
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Error fetching parking lots: \(error.localizedDescription)")
+                // If the fetch fails, use cached data if available
+                DispatchQueue.main.async {
+                    self.parkingLots = cachedParkingLots // Use cached data
+                }
                 return
             }
-            
+
             guard let data = data else {
                 print("No data received")
                 return
             }
-            
+
             do {
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let documents = json["documents"] as? [[String: Any]] {
@@ -228,10 +221,7 @@ struct MainMapView: View {
                               let closeTime = fields["close_time"] as? [String: String] else {
                             return nil
                         }
-                        print("Open Time: \(openTime)")
 
-                        let dateFormatter = ISO8601DateFormatter()
-                        
                         return ParkingLot(
                             id: document["name"] as? String ?? UUID().uuidString,
                             name: name["stringValue"] ?? "",
@@ -246,9 +236,10 @@ struct MainMapView: View {
                             closeTime: closeTime["stringValue"] ?? "N/A"
                         )
                     }
-                    
+
                     DispatchQueue.main.async {
-                        self.parkingLots = newParkingLots
+                        self.cachedParkingLots = newParkingLots // Cache the fetched data
+                        self.parkingLots = newParkingLots // Update the main data
                     }
                 }
             } catch {
@@ -256,7 +247,6 @@ struct MainMapView: View {
             }
         }.resume()
     }
-
 }
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
