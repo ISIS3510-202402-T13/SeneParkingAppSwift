@@ -11,7 +11,7 @@ struct RegisterParkingLotView: View {
     @State private var availableEVSpots: String = ""
     @State private var message: String = ""
     @State private var isShowingAlert: Bool = false
-    @State private var registrationSuccess: Bool = false // New state variable
+    @State private var registrationSuccess: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -42,7 +42,7 @@ struct RegisterParkingLotView: View {
                                 FormField(title: "Available EV Spots", text: $availableEVSpots)
                                 
                                 RegisterParking {
-                                    registerParkingLot()
+                                    validateAndRegister()
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -79,11 +79,10 @@ struct RegisterParkingLotView: View {
         .alert(isPresented: $isShowingAlert) {
             Alert(title: Text("Registration Status"), message: Text(message), dismissButton: .default(Text("OK")) {
                 if registrationSuccess {
-
+                    // Navigate to main menu if registration is successful
                 }
             })
         }
-        // NavigationLink to the main menu, conditional on registration success
         .background(
             NavigationLink(destination: SignInView(), isActive: $registrationSuccess) {
                 EmptyView()
@@ -102,10 +101,74 @@ struct RegisterParkingLotView: View {
         }
     }
     
+    private func validateAndRegister() {
+        // Input validation
+        guard !parkingLotName.isEmpty,
+              !farePerDay.isEmpty,
+              !closeTime.isEmpty,
+              !availableSpots.isEmpty,
+              !openTime.isEmpty,
+              !longitude.isEmpty,
+              !latitude.isEmpty,
+              !availableEVSpots.isEmpty else {
+            message = "Please fill in all fields."
+            isShowingAlert = true
+            return
+        }
+        
+        // Check numeric values
+        guard let fare = Int(farePerDay), fare > 0 else {
+            message = "Fare Per Day must be a valid positive number."
+            isShowingAlert = true
+            return
+        }
+        
+        guard let spots = Int(availableSpots), spots >= 0 else {
+            message = "Available Spots must be a valid non-negative number."
+            isShowingAlert = true
+            return
+        }
+        
+        guard let evSpots = Int(availableEVSpots), evSpots >= 0 else {
+            message = "Available EV Spots must be a valid non-negative number."
+            isShowingAlert = true
+            return
+        }
+
+        guard let longitudeValue = Double(longitude), -180.0 <= longitudeValue && longitudeValue <= 180.0 else {
+            message = "Longitude must be a valid number between -180 and 180."
+            isShowingAlert = true
+            return
+        }
+
+        guard let latitudeValue = Double(latitude), -90.0 <= latitudeValue && latitudeValue <= 90.0 else {
+            message = "Latitude must be a valid number between -90 and 90."
+            isShowingAlert = true
+            return
+        }
+        
+        // Validate open and close times format
+        let timeFormat = #"^(0[1-9]|1[0-2]):[0-5][0-9](am|pm)$"#
+        guard NSPredicate(format: "SELF MATCHES %@", timeFormat).evaluate(with: openTime) else {
+            message = "Open Time must be in the format hh:mmam or hh:mmpm."
+            isShowingAlert = true
+            return
+        }
+        
+        guard NSPredicate(format: "SELF MATCHES %@", timeFormat).evaluate(with: closeTime) else {
+            message = "Close Time must be in the format hh:mmam or hh:mmpm."
+            isShowingAlert = true
+            return
+        }
+
+        // If all validations pass, proceed to register
+        registerParkingLot()
+    }
+    
     func registerParkingLot() {
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots") else {
-            self.message = "Invalid URL"
-            self.isShowingAlert = true
+            message = "Invalid URL"
+            isShowingAlert = true
             return
         }
 
