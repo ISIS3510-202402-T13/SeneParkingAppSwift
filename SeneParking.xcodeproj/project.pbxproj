@@ -13,6 +13,7 @@
 		224305E22CAB8A3A0062FC51 /* SeneParkingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305E12CAB8A3A0062FC51 /* SeneParkingTests.swift */; };
 		224305EC2CAB8A3A0062FC51 /* SeneParkingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */; };
 		224305EE2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */; };
+		22BD6E3F2CD8381200EC254A /* ParkingLotRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */; };
 		22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C468D02CAD9FC900539A79 /* SignUp.swift */; };
 		D43498772CC227B500E807ED /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43498762CC227B200E807ED /* SignIn.swift */; };
 		D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */; };
@@ -49,6 +50,7 @@
 		224305E72CAB8A3A0062FC51 /* SeneParkingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SeneParkingUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		224305EB2CAB8A3A0062FC51 /* SeneParkingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITests.swift; sourceTree = "<group>"; };
 		224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingLotRegistration.swift; sourceTree = "<group>"; };
 		22C468D02CAD9FC900539A79 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
 		D43498762CC227B200E807ED /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensePlateRecognitionView.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 				D48F21882CD1E7A5009A4189 /* ParkingReservationManager.swift */,
 				D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */,
 				D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */,
+				22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */,
 				224305D42CAB8A390062FC51 /* Assets.xcassets */,
 			);
 			path = SeneParking;
@@ -271,6 +274,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				224224902CAE24B500A1B3AC /* ForgotPasswordView.swift in Sources */,
+				22BD6E3F2CD8381200EC254A /* ParkingLotRegistration.swift in Sources */,
 				D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */,
 				D48F21862CD08B4A009A4189 /* ParkingNotificationManager.swift in Sources */,
 				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
