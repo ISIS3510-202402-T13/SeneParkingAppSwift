@@ -5,6 +5,7 @@ struct SignInView: View {
     @State private var password: String = ""
     @State private var login = false
     @State private var showLicensePlateRecognition = false
+    @State private var showRegisterParkingLot = false
     
     // Variables for validation and error handling
     @State private var mobileErrorMessage: String? = nil
@@ -100,7 +101,8 @@ struct SignInView: View {
                         }
                         
                         Button(action: {
-                            showLicensePlateRecognition = true
+                            // showLicensePlateRecognition = true
+                            showRegisterParkingLot = true
                         }) {
                             Text("I'm a Parking Lot Owner")
                                 .font(.headline)
@@ -127,8 +129,8 @@ struct SignInView: View {
             .navigationDestination(isPresented: $login) {
                 MainMapView()
             }
-            .navigationDestination(isPresented: $showLicensePlateRecognition) {
-                LicensePlateRecognitionView()
+            .navigationDestination(isPresented: $showRegisterParkingLot) {
+                RegisterParkingLotView()
             }
             .navigationBarHidden(true)
         }
