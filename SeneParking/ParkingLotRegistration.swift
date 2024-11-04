@@ -11,6 +11,7 @@ struct RegisterParkingLotView: View {
     @State private var availableEVSpots: String = ""
     @State private var message: String = ""
     @State private var isShowingAlert: Bool = false
+    @State private var registrationSuccess: Bool = false // New state variable
 
     var body: some View {
         NavigationStack {
@@ -76,7 +77,28 @@ struct RegisterParkingLotView: View {
             }
         }
         .alert(isPresented: $isShowingAlert) {
-            Alert(title: Text("Registration Status"), message: Text(message), dismissButton: .default(Text("OK")))
+            Alert(title: Text("Registration Status"), message: Text(message), dismissButton: .default(Text("OK")) {
+                if registrationSuccess {
+
+                }
+            })
+        }
+        // NavigationLink to the main menu, conditional on registration success
+        .background(
+            NavigationLink(destination: SignInView(), isActive: $registrationSuccess) {
+                EmptyView()
+            }
+        )
+        .onAppear {
+            // Clear all fields when the view appears
+            parkingLotName = ""
+            farePerDay = ""
+            closeTime = ""
+            availableSpots = ""
+            openTime = ""
+            longitude = ""
+            latitude = ""
+            availableEVSpots = ""
         }
     }
     
@@ -111,7 +133,8 @@ struct RegisterParkingLotView: View {
                     self.message = "Error: \(error.localizedDescription)"
                 } else if let data = data,
                           let response = try? JSONDecoder().decode(FirestoreResponse.self, from: data) {
-                    self.message = "Successfully registered parking lot with ID: \(response.name)"
+                    self.message = "Successfully registered parking lot!"
+                    self.registrationSuccess = true // Update this state to trigger navigation
                 } else {
                     self.message = "Failed to register parking lot"
                 }
