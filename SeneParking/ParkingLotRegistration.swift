@@ -34,9 +34,9 @@ struct RegisterParkingLotView: View {
                             VStack(spacing: 10) {
                                 FormField(title: "Parking Lot Name", text: $parkingLotName)
                                 FormField(title: "Fare Per Day", text: $farePerDay)
+                                FormField(title: "Open Time (e.g., 6:00am)", text: $openTime)
                                 FormField(title: "Close Time (e.g., 10:00pm)", text: $closeTime)
                                 FormField(title: "Available Spots", text: $availableSpots)
-                                FormField(title: "Open Time (e.g., 6:00am)", text: $openTime)
                                 FormField(title: "Longitude", text: $longitude)
                                 FormField(title: "Latitude", text: $latitude)
                                 FormField(title: "Available EV Spots", text: $availableEVSpots)
