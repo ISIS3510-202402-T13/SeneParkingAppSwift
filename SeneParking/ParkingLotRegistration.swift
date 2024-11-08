@@ -12,6 +12,16 @@ struct RegisterParkingLotView: View {
     @State private var message: String = ""
     @State private var isShowingAlert: Bool = false
     @State private var registrationSuccess: Bool = false
+    
+    // Error message states
+    @State private var parkingLotNameError: String? = nil
+    @State private var farePerDayError: String? = nil
+    @State private var closeTimeError: String? = nil
+    @State private var availableSpotsError: String? = nil
+    @State private var openTimeError: String? = nil
+    @State private var longitudeError: String? = nil
+    @State private var latitudeError: String? = nil
+    @State private var availableEVSpotsError: String? = nil
 
     var body: some View {
         NavigationStack {
@@ -32,14 +42,53 @@ struct RegisterParkingLotView: View {
                                 .multilineTextAlignment(.center)
                             
                             VStack(spacing: 10) {
-                                FormField(title: "Parking Lot Name", text: $parkingLotName)
-                                FormField(title: "Fare Per Day", text: $farePerDay)
-                                FormField(title: "Open Time (e.g., 6:00am)", text: $openTime)
-                                FormField(title: "Close Time (e.g., 10:00pm)", text: $closeTime)
-                                FormField(title: "Available Spots", text: $availableSpots)
-                                FormField(title: "Longitude", text: $longitude)
-                                FormField(title: "Latitude", text: $latitude)
-                                FormField(title: "Available EV Spots", text: $availableEVSpots)
+                                FormFieldWithError(
+                                    title: "Parking Lot Name",
+                                    text: $parkingLotName,
+                                    error: parkingLotNameError
+                                ) { validateParkingLotName() }
+                                
+                                FormFieldWithError(
+                                    title: "Fare Per Day",
+                                    text: $farePerDay,
+                                    error: farePerDayError
+                                ) { validateFarePerDay() }
+                                
+                                FormFieldWithError(
+                                    title: "Open Time (e.g., 06:00am)",
+                                    text: $openTime,
+                                    error: openTimeError
+                                ) { validateOpenTime() }
+                                
+                                FormFieldWithError(
+                                    title: "Close Time (e.g., 10:00pm)",
+                                    text: $closeTime,
+                                    error: closeTimeError
+                                ) { validateCloseTime() }
+                                
+                                FormFieldWithError(
+                                    title: "Available Spots",
+                                    text: $availableSpots,
+                                    error: availableSpotsError
+                                ) { validateAvailableSpots() }
+                                
+                                FormFieldWithError(
+                                    title: "Longitude",
+                                    text: $longitude,
+                                    error: longitudeError
+                                ) { validateLongitude() }
+                                
+                                FormFieldWithError(
+                                    title: "Latitude",
+                                    text: $latitude,
+                                    error: latitudeError
+                                ) { validateLatitude() }
+                                
+                                FormFieldWithError(
+                                    title: "Available EV Spots",
+                                    text: $availableEVSpots,
+                                    error: availableEVSpotsError
+                                ) { validateEVSpots() }
                                 
                                 RegisterParking {
                                     validateAndRegister()
@@ -88,84 +137,122 @@ struct RegisterParkingLotView: View {
                 EmptyView()
             }
         )
-        .onAppear {
-            // Clear all fields when the view appears
-            parkingLotName = ""
-            farePerDay = ""
-            closeTime = ""
-            availableSpots = ""
-            openTime = ""
-            longitude = ""
-            latitude = ""
-            availableEVSpots = ""
+        .onAppear(perform: clearFields)
+    }
+    
+    private func clearFields() {
+        parkingLotName = ""
+        farePerDay = ""
+        closeTime = ""
+        availableSpots = ""
+        openTime = ""
+        longitude = ""
+        latitude = ""
+        availableEVSpots = ""
+        
+        // Clear error messages
+        parkingLotNameError = nil
+        farePerDayError = nil
+        closeTimeError = nil
+        availableSpotsError = nil
+        openTimeError = nil
+        longitudeError = nil
+        latitudeError = nil
+        availableEVSpotsError = nil
+    }
+    
+    private func validateParkingLotName() -> Bool {
+        if parkingLotName.isEmpty {
+            parkingLotNameError = "Parking lot name cannot be empty."
+            return false
         }
+        parkingLotNameError = nil
+        return true
+    }
+    
+    private func validateFarePerDay() -> Bool {
+        guard let fare = Int(farePerDay), fare > 0 else {
+            farePerDayError = "Fare must be a valid positive number."
+            return false
+        }
+        farePerDayError = nil
+        return true
+    }
+    
+    private func validateOpenTime() -> Bool {
+        let timeFormat = #"^(0[1-9]|1[0-2]):[0-5][0-9](am|pm)$"#
+        guard NSPredicate(format: "SELF MATCHES %@", timeFormat).evaluate(with: openTime) else {
+            openTimeError = "Open Time must be in the format hh:mmam or hh:mmpm."
+            return false
+        }
+        openTimeError = nil
+        return true
+    }
+    
+    private func validateCloseTime() -> Bool {
+        let timeFormat = #"^(0[1-9]|1[0-2]):[0-5][0-9](am|pm)$"#
+        guard NSPredicate(format: "SELF MATCHES %@", timeFormat).evaluate(with: closeTime) else {
+            closeTimeError = "Close Time must be in the format hh:mmam or hh:mmpm."
+            return false
+        }
+        closeTimeError = nil
+        return true
+    }
+    
+    private func validateAvailableSpots() -> Bool {
+        guard let spots = Int(availableSpots), spots >= 0 else {
+            availableSpotsError = "Available spots must be a valid non-negative number."
+            return false
+        }
+        availableSpotsError = nil
+        return true
+    }
+    
+    private func validateLongitude() -> Bool {
+        guard let longitudeValue = Double(longitude),
+              -180.0 <= longitudeValue && longitudeValue <= 180.0 else {
+            longitudeError = "Longitude must be a valid number between -180 and 180."
+            return false
+        }
+        longitudeError = nil
+        return true
+    }
+    
+    private func validateLatitude() -> Bool {
+        guard let latitudeValue = Double(latitude),
+              -90.0 <= latitudeValue && latitudeValue <= 90.0 else {
+            latitudeError = "Latitude must be a valid number between -90 and 90."
+            return false
+        }
+        latitudeError = nil
+        return true
+    }
+    
+    private func validateEVSpots() -> Bool {
+        guard let evSpots = Int(availableEVSpots), evSpots >= 0 else {
+            availableEVSpotsError = "Available EV spots must be a valid non-negative number."
+            return false
+        }
+        availableEVSpotsError = nil
+        return true
     }
     
     private func validateAndRegister() {
-        // Input validation
-        guard !parkingLotName.isEmpty,
-              !farePerDay.isEmpty,
-              !closeTime.isEmpty,
-              !availableSpots.isEmpty,
-              !openTime.isEmpty,
-              !longitude.isEmpty,
-              !latitude.isEmpty,
-              !availableEVSpots.isEmpty else {
-            message = "Please fill in all fields."
-            isShowingAlert = true
-            return
-        }
+        let isValid = validateParkingLotName() &&
+                     validateFarePerDay() &&
+                     validateOpenTime() &&
+                     validateCloseTime() &&
+                     validateAvailableSpots() &&
+                     validateLongitude() &&
+                     validateLatitude() &&
+                     validateEVSpots()
         
-        // Check numeric values
-        guard let fare = Int(farePerDay), fare > 0 else {
-            message = "Fare Per Day must be a valid positive number."
-            isShowingAlert = true
-            return
+        if isValid {
+            registerParkingLot()
         }
-        
-        guard let spots = Int(availableSpots), spots >= 0 else {
-            message = "Available Spots must be a valid non-negative number."
-            isShowingAlert = true
-            return
-        }
-        
-        guard let evSpots = Int(availableEVSpots), evSpots >= 0 else {
-            message = "Available EV Spots must be a valid non-negative number."
-            isShowingAlert = true
-            return
-        }
-
-        guard let longitudeValue = Double(longitude), -180.0 <= longitudeValue && longitudeValue <= 180.0 else {
-            message = "Longitude must be a valid number between -180 and 180."
-            isShowingAlert = true
-            return
-        }
-
-        guard let latitudeValue = Double(latitude), -90.0 <= latitudeValue && latitudeValue <= 90.0 else {
-            message = "Latitude must be a valid number between -90 and 90."
-            isShowingAlert = true
-            return
-        }
-        
-        // Validate open and close times format
-        let timeFormat = #"^(0[1-9]|1[0-2]):[0-5][0-9](am|pm)$"#
-        guard NSPredicate(format: "SELF MATCHES %@", timeFormat).evaluate(with: openTime) else {
-            message = "Open Time must be in the format hh:mmam or hh:mmpm."
-            isShowingAlert = true
-            return
-        }
-        
-        guard NSPredicate(format: "SELF MATCHES %@", timeFormat).evaluate(with: closeTime) else {
-            message = "Close Time must be in the format hh:mmam or hh:mmpm."
-            isShowingAlert = true
-            return
-        }
-
-        // If all validations pass, proceed to register
-        registerParkingLot()
     }
     
-    func registerParkingLot() {
+    private func registerParkingLot() {
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots") else {
             message = "Invalid URL"
             isShowingAlert = true
@@ -197,7 +284,7 @@ struct RegisterParkingLotView: View {
                 } else if let data = data,
                           let response = try? JSONDecoder().decode(FirestoreResponse.self, from: data) {
                     self.message = "Successfully registered parking lot!"
-                    self.registrationSuccess = true // Update this state to trigger navigation
+                    self.registrationSuccess = true
                 } else {
                     self.message = "Failed to register parking lot"
                 }
@@ -207,17 +294,29 @@ struct RegisterParkingLotView: View {
     }
 }
 
-struct FormField: View {
+struct FormFieldWithError: View {
     var title: String
     @Binding var text: String
+    var error: String?
+    var validation: () -> Void
     
     var body: some View {
-        TextField(title, text: $text)
-            .padding()
-            .background(Color.white)
-            .foregroundColor(Color.black)
-            .cornerRadius(10)
-            .padding(.bottom, 10)
+        VStack(alignment: .leading) {
+            TextField(title, text: $text)
+                .padding()
+                .background(Color.white)
+                .foregroundColor(Color.black)
+                .cornerRadius(10)
+                .onChange(of: text) { _ in validation() }
+            
+            if let error = error {
+                Text(error)
+                    .foregroundColor(.white)
+                    .font(.footnote)
+                    .padding(.leading, 5)
+            }
+        }
+        .padding(.bottom, 5)
     }
 }
 
