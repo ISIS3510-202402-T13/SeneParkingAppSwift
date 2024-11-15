@@ -13,6 +13,9 @@ struct SignInView: View {
     @State private var loginErrorMessage: String? = nil
     @State private var isLoading: Bool = false
     
+    // Store and track the mobile number in UserDefaults (session management)
+    @AppStorage("userMobileNumber") private var storedMobileNumber: String = ""
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -138,6 +141,12 @@ struct SignInView: View {
             }
             .navigationBarHidden(true)
         }
+        .onAppear {
+            // Pre-fill the mobile number if it is stored in UserDefaults (session management)
+            if !storedMobileNumber.isEmpty {
+                mobileNumber = storedMobileNumber
+            }
+        }
     }
     
     // MARK: - Validation Functions
@@ -218,6 +227,9 @@ struct SignInView: View {
                                 if mobileNumberField == mobileNumber && passwordField == password {
                                     userFound = true
                                     login = true // User authenticated, navigate to the main app view
+                                    
+                                    // Store mobile number in UserDefaults (session management)
+                                    storedMobileNumber = mobileNumber
                                     break
                                 }
                             }
