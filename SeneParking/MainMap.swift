@@ -9,15 +9,58 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-struct ParkingLot: Identifiable {
+struct ParkingLot: Identifiable, Codable {
     let id: String
     let name: String
-    let coordinate: CLLocationCoordinate2D
+    var coordinate: CLLocationCoordinate2D
     let availableSpots: Int
     let availableEVSpots: Int
     let farePerDay: Int
     let openTime: String
     let closeTime: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, availableSpots, availableEVSpots, farePerDay, openTime, closeTime
+        case latitude, longitude
+    }
+    
+    init(id: String, name: String, coordinate: CLLocationCoordinate2D, availableSpots: Int, availableEVSpots: Int, farePerDay: Int, openTime: String, closeTime: String) {
+        self.id = id
+        self.name = name
+        self.coordinate = coordinate
+        self.availableSpots = availableSpots
+        self.availableEVSpots = availableEVSpots
+        self.farePerDay = farePerDay
+        self.openTime = openTime
+        self.closeTime = closeTime
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        let latitude = try container.decode(Double.self, forKey: .latitude)
+        let longitude = try container.decode(Double.self, forKey: .longitude)
+        coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        availableSpots = try container.decode(Int.self, forKey: .availableSpots)
+        availableEVSpots = try container.decode(Int.self, forKey: .availableEVSpots)
+        farePerDay = try container.decode(Int.self, forKey: .farePerDay)
+        openTime = try container.decode(String.self, forKey: .openTime)
+        closeTime = try container.decode(String.self, forKey: .closeTime)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(coordinate.latitude, forKey: .latitude)
+        try container.encode(coordinate.longitude, forKey: .longitude)
+        try container.encode(availableSpots, forKey: .availableSpots)
+        try container.encode(availableEVSpots, forKey: .availableEVSpots)
+        try container.encode(farePerDay, forKey: .farePerDay)
+        try container.encode(openTime, forKey: .openTime)
+        try container.encode(closeTime, forKey: .closeTime)
+    }
 }
 
 struct MainMapView: View {
@@ -57,6 +100,16 @@ struct MainMapView: View {
                         .background(Color.white.opacity(0.8))
                         .cornerRadius(10)
                         .padding(.top)
+                    
+                    if !NetworkMonitor.shared.isConnected,
+                                           let lastUpdate = OfflineDataManager.shared.getLastUpdateTime() {
+                                            Text("Last updated: \(lastUpdate.formatted())")
+                                                .foregroundColor(.white)
+                                                .padding()
+                                                .background(Color.black.opacity(0.7))
+                                                .cornerRadius(10)
+                                                .padding()
+                                        }
                     
                     Spacer()
                     
@@ -186,27 +239,35 @@ struct MainMapView: View {
     }
 
     func fetchParkingLots() {
+        
+        if !NetworkMonitor.shared.isConnected {
+                    if let cached = OfflineDataManager.shared.getCachedParkingLots() {
+                        self.parkingLots = cached
+                    }
+                    return
+                }
+        
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots") else {
             print("Invalid URL")
             return
         }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Error fetching parking lots: \(error.localizedDescription)")
-                // If the fetch fails, use cached data if available
-                DispatchQueue.main.async {
-                    self.parkingLots = cachedParkingLots // Use cached data
-                }
-                return
-            }
+               if let error = error {
+                   print("Error fetching parking lots: \(error.localizedDescription)")
+                   DispatchQueue.main.async {
+                       self.parkingLots = self.cachedParkingLots
+                   }
+                   return
+               }
 
-            guard let data = data else {
-                print("No data received")
-                return
-            }
+               guard let data = data else {
+                   print("No data received")
+                   return
+               }
 
-            do {
+               do {
+                   
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let documents = json["documents"] as? [[String: Any]] {
                     let newParkingLots = documents.compactMap { document -> ParkingLot? in
@@ -223,23 +284,24 @@ struct MainMapView: View {
                         }
 
                         return ParkingLot(
-                            id: document["name"] as? String ?? UUID().uuidString,
-                            name: name["stringValue"] ?? "",
-                            coordinate: CLLocationCoordinate2D(
-                                latitude: latitude["doubleValue"] ?? 0,
-                                longitude: longitude["doubleValue"] ?? 0
-                            ),
-                            availableSpots: Int(availableSpots["integerValue"] ?? "") ?? 0,
-                            availableEVSpots: Int(availableEVSpots["integerValue"] ?? "") ?? 0,
-                            farePerDay: Int(farePerDay["integerValue"] ?? "") ?? 0,
-                            openTime: openTime["stringValue"] ?? "N/A",
-                            closeTime: closeTime["stringValue"] ?? "N/A"
-                        )
+                                id: document["name"] as? String ?? UUID().uuidString,
+                                name: name["stringValue"] ?? "",
+                                coordinate: CLLocationCoordinate2D(
+                                    latitude: latitude["doubleValue"] ?? 0,
+                                    longitude: longitude["doubleValue"] ?? 0
+                                ),
+                                availableSpots: Int(availableSpots["integerValue"] ?? "") ?? 0,
+                                availableEVSpots: Int(availableEVSpots["integerValue"] ?? "") ?? 0,
+                                farePerDay: Int(farePerDay["integerValue"] ?? "") ?? 0,
+                                openTime: openTime["stringValue"] ?? "N/A",
+                                closeTime: closeTime["stringValue"] ?? "N/A"
+                            )
                     }
 
                     DispatchQueue.main.async {
                         self.cachedParkingLots = newParkingLots // Cache the fetched data
                         self.parkingLots = newParkingLots // Update the main data
+                        OfflineDataManager.shared.cacheParkingLots(newParkingLots)
                     }
                 }
             } catch {

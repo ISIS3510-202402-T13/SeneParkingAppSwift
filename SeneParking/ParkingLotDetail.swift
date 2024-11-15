@@ -9,6 +9,17 @@ struct ParkingLotDetailView: View {
     @StateObject private var notificationManager = ParkingNotificationManager.shared
     @StateObject private var reservationManager = ParkingReservationManager()
     
+    private var canMakeReservation: Bool {
+            NetworkMonitor.shared.isConnected && parkingLot.availableSpots > 0
+        }
+        
+        private var reservationButtonText: String {
+            if !NetworkMonitor.shared.isConnected {
+                return "Offline - Reservations Unavailable"
+            }
+            return reservationManager.isReserving ? "Processing..." : "Reserve Spot"
+        }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {

@@ -8,7 +8,6 @@
 import SwiftUI
 import Combine
 
-// MARK: - Reservation Models
 struct ReservationRequest: Codable {
     let parkingLotId: String
     let userId: String
