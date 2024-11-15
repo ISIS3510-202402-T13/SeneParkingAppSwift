@@ -48,7 +48,7 @@ struct RegisterParkingLotView: View {
                                     error: parkingLotNameError
                                 ) { validateParkingLotName() }
                                 
-                                FormFieldWithError(
+                                NumberFieldWithError(
                                     title: "Fare Per Day",
                                     text: $farePerDay,
                                     error: farePerDayError
@@ -66,7 +66,7 @@ struct RegisterParkingLotView: View {
                                     error: closeTimeError
                                 ) { validateCloseTime() }
                                 
-                                FormFieldWithError(
+                                NumberFieldWithError(
                                     title: "Available Spots",
                                     text: $availableSpots,
                                     error: availableSpotsError
@@ -84,7 +84,7 @@ struct RegisterParkingLotView: View {
                                     error: latitudeError
                                 ) { validateLatitude() }
                                 
-                                FormFieldWithError(
+                                NumberFieldWithError(
                                     title: "Available EV Spots",
                                     text: $availableEVSpots,
                                     error: availableEVSpotsError
@@ -307,7 +307,46 @@ struct FormFieldWithError: View {
                 .background(Color.white)
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
-                .onChange(of: text) { _ in validation() }
+                .onChange(of: text) { newValue in
+                    // Limit the input to 20 characters
+                    if newValue.count > 20 {
+                        text = String(newValue.prefix(20))
+                    }
+                    validation() // Run the validation
+                }
+            
+            if let error = error {
+                Text(error)
+                    .foregroundColor(.white)
+                    .font(.footnote)
+                    .padding(.leading, 5)
+            }
+        }
+        .padding(.bottom, 5)
+    }
+}
+
+struct NumberFieldWithError: View {
+    var title: String
+    @Binding var text: String
+    var error: String?
+    var validation: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            TextField(title, text: $text)
+                .keyboardType(.numberPad)
+                .padding()
+                .background(Color.white)
+                .foregroundColor(Color.black)
+                .cornerRadius(10)
+                .onChange(of: text) { newValue in
+                    // Limit the input to 20 characters
+                    if newValue.count > 20 {
+                        text = String(newValue.prefix(20))
+                    }
+                    validation() // Run the validation
+                }
             
             if let error = error {
                 Text(error)
