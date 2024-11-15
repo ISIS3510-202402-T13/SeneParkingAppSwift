@@ -173,6 +173,9 @@ struct SignUpView: View {
         } else if password.count > 30 {
             passwordError = "Password cannot exceed 30 characters."
             return false
+        } else if password.count < 8 {
+            passwordError = "Password must be at least 8 characters."
+            return false
         }
         passwordError = nil
         return true
@@ -257,7 +260,7 @@ struct BackgroundView: View {
     }
 }
 
-struct AppLogoView: View { // Renamed from LogoView to AppLogoView
+struct AppLogoView: View {
     var body: some View {
         VStack {
             Image(systemName: "car.fill") // TODO
@@ -325,14 +328,19 @@ struct FormFields: View {
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
-                .onChange(of: firstName, perform: { _ in validateFirstName() })
+                .onChange(of: firstName) { newValue in
+                    if newValue.count > 30 {
+                        firstName = String(newValue.prefix(30)) // Limit to 30 characters
+                    }
+                    validateFirstName()
+                }
             Text(firstNameError ?? " ")
                 .foregroundColor(.white)
                 .font(.footnote)
                 .frame(height: 10)
         }
     }
-    
+
     private func lastNameField() -> some View {
         VStack {
             TextField("Last name", text: $lastName)
@@ -341,7 +349,12 @@ struct FormFields: View {
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
-                .onChange(of: lastName, perform: { _ in validateLastName() })
+                .onChange(of: lastName) { newValue in
+                    if newValue.count > 30 {
+                        lastName = String(newValue.prefix(30)) // Limit to 30 characters
+                    }
+                    validateLastName()
+                }
             Text(lastNameError ?? " ")
                 .foregroundColor(.white)
                 .font(.footnote)
@@ -357,7 +370,12 @@ struct FormFields: View {
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
-                .onChange(of: email, perform: { _ in validateEmail() })
+                .onChange(of: email) { newValue in
+                    if newValue.count > 30 {
+                        email = String(newValue.prefix(30)) // Limit to 30 characters
+                    }
+                    validateEmail()
+                }
             Text(emailError ?? " ")
                 .foregroundColor(.white)
                 .font(.footnote)
@@ -368,6 +386,7 @@ struct FormFields: View {
     private func mobileNumberField() -> some View {
         VStack {
             TextField("Mobile number", text: $mobileNumber)
+                .keyboardType(.numberPad)
                 .padding()
                 .background(Color.white)
                 .foregroundColor(Color.black)
@@ -412,6 +431,7 @@ struct FormFields: View {
     private func uniandesCodeField() -> some View {
         VStack {
             TextField("Uniandes code", text: $uniandesCode)
+                .keyboardType(.numberPad)
                 .padding()
                 .background(Color.white)
                 .foregroundColor(Color.black)
@@ -439,7 +459,12 @@ struct FormFields: View {
                 .foregroundColor(Color.black)
                 .cornerRadius(10)
                 .padding(.bottom, 5)
-                .onChange(of: password, perform: { _ in validatePassword() })
+                .onChange(of: password) { newValue in
+                    if newValue.count > 20 {
+                        password = String(newValue.prefix(20)) // Limit to 20 characters
+                    }
+                    validatePassword()
+                }
             Text(passwordError ?? " ")
                 .foregroundColor(.white)
                 .font(.footnote)
@@ -447,7 +472,6 @@ struct FormFields: View {
         }
     }
 
-    // Validation Functions (You can define them here or pass them down from SignUpView)
     private func validateFirstName() -> Bool {
         if firstName.isEmpty {
             firstNameError = "First name cannot be empty."
@@ -550,6 +574,9 @@ struct FormFields: View {
             return false
         } else if password.count > 30 {
             passwordError = "Password cannot exceed 30 characters."
+            return false
+        } else if password.count < 8 {
+            passwordError = "Password must be at least 8 characters."
             return false
         }
         passwordError = nil

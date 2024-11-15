@@ -27,6 +27,7 @@ struct SignInView: View {
                     Group {
                         // Mobile Number / ID Field and Error Message
                         TextField("Mobile number", text: $mobileNumber)
+                            .keyboardType(.numberPad)
                             .padding()
                             .background(Color.white)
                             .foregroundColor(Color.black)
@@ -49,7 +50,10 @@ struct SignInView: View {
                             .foregroundColor(Color.black)
                             .cornerRadius(10)
                             .padding(.bottom, 5)
-                            .onChange(of: password) { _ in
+                            .onChange(of: password) { newValue in
+                                if newValue.count > 20 {
+                                    password = String(newValue.prefix(20)) // Max length for password
+                                }
                                 validatePassword()
                             }
                         
@@ -156,8 +160,11 @@ struct SignInView: View {
         if password.isEmpty {
             passwordErrorMessage = "Password cannot be empty."
             return false
-        } else if password.count > 30 {
-            passwordErrorMessage = "Password cannot exceed 30 characters."
+        } else if password.count > 20 {
+            passwordErrorMessage = "Password cannot exceed 20 characters."
+            return false
+        } else if password.count < 8 {
+            passwordErrorMessage = "Password must be at least 8 characters."
             return false
         }
         passwordErrorMessage = nil
