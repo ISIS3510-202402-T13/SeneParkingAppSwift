@@ -13,8 +13,9 @@ struct SignInView: View {
     @State private var loginErrorMessage: String? = nil
     @State private var isLoading: Bool = false
     
-    // Store and track the mobile number in UserDefaults (session management)
+    // Store and track the credetials in UserDefaults (session management)
     @AppStorage("userMobileNumber") private var storedMobileNumber: String = ""
+    @AppStorage("userPassword") private var storedPassword: String = ""
     
     var body: some View {
         NavigationStack {
@@ -146,6 +147,9 @@ struct SignInView: View {
             if !storedMobileNumber.isEmpty {
                 mobileNumber = storedMobileNumber
             }
+            if !storedPassword.isEmpty {
+                password = storedPassword
+            }
         }
     }
     
@@ -230,6 +234,7 @@ struct SignInView: View {
                                     
                                     // Store mobile number in UserDefaults (session management)
                                     storedMobileNumber = mobileNumber
+                                    storedPassword = password
                                     break
                                 }
                             }
