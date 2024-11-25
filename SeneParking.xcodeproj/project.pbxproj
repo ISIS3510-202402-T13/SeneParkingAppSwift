@@ -15,6 +15,7 @@
 		224305EE2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */; };
 		22BD6E3F2CD8381200EC254A /* ParkingLotRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */; };
 		22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C468D02CAD9FC900539A79 /* SignUp.swift */; };
+		D3B7F3B42CF438000056934A /* OfflineIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B7F3B32CF437FE0056934A /* OfflineIndicator.swift */; };
 		D43498772CC227B500E807ED /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43498762CC227B200E807ED /* SignIn.swift */; };
 		D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */; };
 		D44B86F42CE7931400F1B12F /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44B86F32CE7930C00F1B12F /* NetworkMonitor.swift */; };
@@ -54,6 +55,7 @@
 		224305ED2CAB8A3A0062FC51 /* SeneParkingUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeneParkingUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParkingLotRegistration.swift; sourceTree = "<group>"; };
 		22C468D02CAD9FC900539A79 /* SignUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUp.swift; sourceTree = "<group>"; };
+		D3B7F3B32CF437FE0056934A /* OfflineIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineIndicator.swift; sourceTree = "<group>"; };
 		D43498762CC227B200E807ED /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensePlateRecognitionView.swift; sourceTree = "<group>"; };
 		D441141F2CC211BA00A5C702 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 				22C468D02CAD9FC900539A79 /* SignUp.swift */,
 				2242248F2CAE24B400A1B3AC /* ForgotPasswordView.swift */,
 				D44E7A222CAE076D00A2A550 /* MainMap.swift */,
+				D3B7F3B32CF437FE0056934A /* OfflineIndicator.swift */,
 				D44E7A202CADE52B00A2A550 /* ParkingLotDetail.swift */,
 				D48F21882CD1E7A5009A4189 /* ParkingReservationManager.swift */,
 				D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */,
@@ -284,6 +287,7 @@
 				22BD6E3F2CD8381200EC254A /* ParkingLotRegistration.swift in Sources */,
 				D44B86F62CE7935400F1B12F /* OfflineDataManager.swift in Sources */,
 				D44E7A232CAE077000A2A550 /* MainMap.swift in Sources */,
+				D3B7F3B42CF438000056934A /* OfflineIndicator.swift in Sources */,
 				D48F21862CD08B4A009A4189 /* ParkingNotificationManager.swift in Sources */,
 				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
 				D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */,

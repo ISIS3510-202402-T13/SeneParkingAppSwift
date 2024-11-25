@@ -13,8 +13,8 @@ struct ParkingLot: Identifiable, Codable {
     let id: String
     let name: String
     var coordinate: CLLocationCoordinate2D
-    let availableSpots: Int
-    let availableEVSpots: Int
+    var availableSpots: Int
+    var availableEVSpots: Int
     let farePerDay: Int
     let openTime: String
     let closeTime: String
@@ -101,15 +101,20 @@ struct MainMapView: View {
                         .cornerRadius(10)
                         .padding(.top)
                     
+                    if !NetworkMonitor.shared.isConnected {
+                        OfflineIndicator()
+                            .padding(.top, 8)
+                    }
+                    
                     if !NetworkMonitor.shared.isConnected,
-                                           let lastUpdate = OfflineDataManager.shared.getLastUpdateTime() {
-                                            Text("Last updated: \(lastUpdate.formatted())")
-                                                .foregroundColor(.white)
-                                                .padding()
-                                                .background(Color.black.opacity(0.7))
-                                                .cornerRadius(10)
-                                                .padding()
-                                        }
+                       let lastUpdate = OfflineDataManager.shared.getLastUpdateTime() {
+                        Text("Offline mode. Info was last updated on \(lastUpdate.formatted())")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(10)
+                            .padding()
+                    }
                     
                     Spacer()
                     
