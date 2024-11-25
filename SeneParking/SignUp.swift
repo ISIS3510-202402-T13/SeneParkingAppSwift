@@ -23,6 +23,10 @@ struct SignUpView: View {
     @State private var registrationError: String? = nil
     @State private var registrationSuccess: Bool = false
     
+    @StateObject private var connectivityManager = NetworkMonitor.shared
+    @State private var showOfflineAlert: Bool = false
+
+    
     // Date formatter
         private var dateFormatter: DateFormatter {
             let formatter = DateFormatter()
@@ -56,6 +60,14 @@ struct SignUpView: View {
                         uniandesCodeError: $uniandesCodeError,
                         passwordError: $passwordError
                     )
+                    
+                    if !connectivityManager.isConnected {
+                       Text("You are currently offline")
+                           .foregroundColor(.white)
+                           .padding()
+                           .background(Color.black.opacity(0.7))
+                           .cornerRadius(10)
+                    }
                     
                     TermsOfServiceView()
                     
@@ -93,6 +105,25 @@ struct SignUpView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 30)
+            }
+        }
+        .alert(isPresented: $showOfflineAlert) {
+            Alert(
+                title: Text("Offline Registration"),
+                message: Text("Please save your new account once the internet connection is restored."),
+                dismissButton: .default(Text("OK"))
+            )
+        }
+        .onAppear {
+            // Set up network status observer
+            NotificationCenter.default.addObserver(
+                forName: .networkStatusChanged,
+                object: nil,
+                queue: .main
+            ) { _ in
+                if connectivityManager.isConnected {
+                    processPendingRegistrations()
+                }
             }
         }
     }
@@ -212,6 +243,15 @@ struct SignUpView: View {
                     ]
                 ]
 
+            if !connectivityManager.isConnected {
+                // Handle offline registration
+                OfflineDataManager.shared.savePendingUser(userData)
+                isLoading = false
+                registrationError = " "
+                showOfflineAlert = true
+                return
+            }
+            
             guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/users") else {
                 registrationError = "Invalid URL"
                 isLoading = false
@@ -251,7 +291,56 @@ struct SignUpView: View {
 
             task.resume()
         }
+    
+    func processPendingRegistrations() {
+          let pendingUsers = OfflineDataManager.shared.getPendingUsers()
+          
+          for userData in pendingUsers {
+              guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/users") else {
+                  continue
+              }
+              
+              var request = URLRequest(url: url)
+              request.httpMethod = "POST"
+              request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+              
+              do {
+                  let jsonData = try JSONSerialization.data(withJSONObject: userData, options: [])
+                  request.httpBody = jsonData
+                  
+                  URLSession.shared.dataTask(with: request) { _, response, error in
+                      if error == nil,
+                         let httpResponse = response as? HTTPURLResponse,
+                         httpResponse.statusCode == 200 {
+                          DispatchQueue.main.async {
+                              OfflineDataManager.shared.removePendingUser(userData)
+                              showRegistrationSuccessNotification()
+                          }
+                      }
+                  }.resume()
+              } catch {
+                  print("Failed to process pending registration: \(error.localizedDescription)")
+              }
+          }
+      }
+      
+      // Add this function to show notification when registration is complete
+      private func showRegistrationSuccessNotification() {
+          let content = UNMutableNotificationContent()
+          content.title = "Account Created"
+          content.body = "Your account has been successfully created!"
+          content.sound = .default
+          
+          let request = UNNotificationRequest(
+              identifier: UUID().uuidString,
+              content: content,
+              trigger: nil
+          )
+          
+          UNUserNotificationCenter.current().add(request)
+      }
 }
+
 
 struct BackgroundView: View {
     var body: some View {
@@ -508,7 +597,7 @@ struct FormFields: View {
             }
             
             // Check for allowed domains
-            let allowedDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"]
+            let allowedDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "uniandes.edu.co"]
             
             guard let domain = email.split(separator: "@").last?.lowercased() else {
                 emailError = "Invalid email domain."
