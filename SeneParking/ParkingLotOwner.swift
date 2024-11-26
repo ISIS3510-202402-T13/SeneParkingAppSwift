@@ -58,7 +58,7 @@ struct ParkingLotOwner: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToManagement) {
-                //ParkingLotManagementView(parkingLotID: parkingLotID)
+                ParkingLotManagementView(parkingLotID: parkingLotID)
             }
             .navigationDestination(isPresented: $navigateToRegistration) {
                 RegisterParkingLotView()
