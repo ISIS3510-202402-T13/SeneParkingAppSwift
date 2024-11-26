@@ -5,6 +5,8 @@ struct ParkingLotOwner: View {
     @State private var navigateToManagement = false
     @State private var navigateToRegistration = false
     
+    @AppStorage("parkingID") private var storedID: String = ""
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -31,6 +33,7 @@ struct ParkingLotOwner: View {
                     // Navigate to Parking Lot Management
                     Button(action: {
                         navigateToManagement = true
+                        storedID = parkingLotID
                     }) {
                         Text("Go to Parking Lot Management")
                             .frame(maxWidth: .infinity)
@@ -64,6 +67,11 @@ struct ParkingLotOwner: View {
                 RegisterParkingLotView()
             }
             .navigationBarHidden(true)
+        }
+        .onAppear() {
+            if !storedID.isEmpty {
+                parkingLotID = storedID
+            }
         }
     }
 }
