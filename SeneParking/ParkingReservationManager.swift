@@ -24,6 +24,7 @@ struct ReservationResponse: Codable {
 class ParkingReservationManager: ObservableObject {
     @Published var isReserving = false
     @Published var reservationStatus: ReservationStatus = .idle
+    @Published var showPaymentView = false
     private var cancellables = Set<AnyCancellable>()
     
     enum ReservationStatus {
@@ -114,6 +115,7 @@ class ParkingReservationManager: ObservableObject {
             DispatchQueue.main.async {
                 self?.isReserving = false
                 self?.reservationStatus = .success("Reservation confirmed!")
+                self?.showPaymentView = true
                 
                 // Schedule local notification
                 self?.scheduleReservationReminder(for: request.startTime)
