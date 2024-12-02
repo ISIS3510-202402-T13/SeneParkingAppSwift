@@ -19,6 +19,18 @@ struct ParkingLotDetailView: View {
     @StateObject private var reservationManager = ParkingReservationManager()
     @StateObject private var networkMonitor = NetworkMonitor.shared
     
+    enum ReservationStatus: String {
+        case offline = "Offline - Reservations Unavailable"
+        case reserved = "Reservation Made"
+        case processing = "Processing..."
+        case available = "Reserve Spot"
+    }
+
+    enum NotificationState: String {
+        case enabled = "Notifications Enabled"
+        case disabled = "Notify When Lot Opens"
+    }
+    
     init(parkingLot: ParkingLot) {
         _parkingLot = State(initialValue: parkingLot)
     }
@@ -29,13 +41,14 @@ struct ParkingLotDetailView: View {
     
     private var reservationButtonText: String {
         if !networkMonitor.isConnected {
-            return "Offline - Reservations Unavailable"
+            return ReservationStatus.offline.rawValue
         }
         if hasReserved {
-            return "Reservation Made"
+            return ReservationStatus.reserved.rawValue
         }
-        return reservationManager.isReserving ? "Processing..." : "Reserve Spot"
+        return reservationManager.isReserving ? ReservationStatus.processing.rawValue : ReservationStatus.available.rawValue
     }
+
     
     var body: some View {
         ScrollView {
@@ -122,7 +135,7 @@ struct ParkingLotDetailView: View {
                 }) {
                     HStack {
                         Image(systemName: notificationEnabled ? "bell.fill" : "bell")
-                        Text(notificationEnabled ? "Notifications Enabled" : "Notify When Lot Opens")
+                        Text(notificationEnabled ? NotificationState.enabled.rawValue : NotificationState.disabled.rawValue)
                             .foregroundColor(.white)
                     }
                     .frame(maxWidth: .infinity)
