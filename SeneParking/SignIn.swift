@@ -138,7 +138,7 @@ struct SignInView: View {
                 MainMapView()
             }
             .navigationDestination(isPresented: $showRegisterParkingLot) {
-                RegisterParkingLotView()
+                ParkingLotOwner()
             }
             .navigationBarHidden(true)
         }

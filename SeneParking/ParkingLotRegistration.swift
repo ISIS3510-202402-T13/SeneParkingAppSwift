@@ -283,7 +283,7 @@ struct RegisterParkingLotView: View {
                     self.message = "Error: \(error.localizedDescription)"
                 } else if let data = data,
                           let response = try? JSONDecoder().decode(FirestoreResponse.self, from: data) {
-                    self.message = "Successfully registered parking lot!"
+                    self.message = "Successfully registered parking lot with ID: \(response.name)"
                     self.registrationSuccess = true
                 } else {
                     self.message = "Failed to register parking lot"
