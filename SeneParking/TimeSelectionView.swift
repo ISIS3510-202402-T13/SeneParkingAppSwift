@@ -1,11 +1,20 @@
-//
-//  TimeSelectionView.swift
-//  SeneParking
-//
-//  Created by Pablo Pastrana on 23/11/24.
-//
-
 import SwiftUI
+
+enum Duration: Int, CaseIterable {
+    case one = 1
+    case two = 2
+    case three = 3
+    case four = 4
+    case six = 6
+    case eight = 8
+    case twelve = 12
+}
+
+enum TimeSummary: String {
+    case from = "From"
+    case to = "To"
+    case duration = "Duration"
+}
 
 struct TimeSelectionView: View {
     @Binding var selectedStartTime: Date
@@ -13,7 +22,7 @@ struct TimeSelectionView: View {
     @State private var showCustomTime = false
     @State private var customEndTime = Date()
     
-    private let availableHours = [1, 2, 3, 4, 6, 8, 12]
+    private let availableHours = Duration.allCases.map(\.rawValue)
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -51,15 +60,15 @@ struct TimeSelectionView: View {
                 } else {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(availableHours, id: \.self) { hours in
+                            ForEach(Duration.allCases, id: \.self) { duration in
                                 Button(action: {
-                                    selectedDuration = hours
+                                    selectedDuration = duration.rawValue
                                 }) {
-                                    Text("\(hours)h")
+                                    Text("\(duration.rawValue)h")
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 8)
-                                        .background(selectedDuration == hours ? Color.blue : Color.gray.opacity(0.2))
-                                        .foregroundColor(selectedDuration == hours ? .white : .primary)
+                                        .background(selectedDuration == duration.rawValue ? Color.blue : Color.gray.opacity(0.2))
+                                        .foregroundColor(selectedDuration == duration.rawValue ? .white : .primary)
                                         .cornerRadius(8)
                                 }
                             }
@@ -74,9 +83,9 @@ struct TimeSelectionView: View {
                     Text("Summary")
                         .font(.headline)
                     
-                    Text("From: \(formatDate(selectedStartTime))")
-                    Text("To: \(formatDate(endTime))")
-                    Text("Duration: \(selectedDuration) hours")
+                    Text("\(TimeSummary.from.rawValue): \(formatDate(selectedStartTime))")
+                    Text("\(TimeSummary.to.rawValue): \(formatDate(endTime))")
+                    Text("\(TimeSummary.duration.rawValue): \(selectedDuration) hours")
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))

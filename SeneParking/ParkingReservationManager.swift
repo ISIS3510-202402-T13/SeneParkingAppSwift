@@ -1,10 +1,3 @@
-//
-//  ParkingReservationManager.swift
-//  SeneParking
-//
-//  Created by Pablo Pastrana on 29/10/24.
-//
-
 import SwiftUI
 import Combine
 
@@ -30,10 +23,20 @@ class ParkingReservationManager: ObservableObject {
     enum ReservationStatus {
         case idle
         case processing
-        case success(String)
-        case failure(String)
+        case success(ReservationConfirmation)
+        case failure(ReservationError)
+        
+        struct ReservationConfirmation {
+            let message: String
+        }
+        
+        struct ReservationError {
+            let message: String
+            let errorCode: Int
+        }
     }
     
+    // M.Optimization: Updated makeReservation function with enum-based messaging
     func makeReservation(parkingLot: ParkingLot, duration: TimeInterval) {
         guard !isReserving else { return }
         isReserving = true
@@ -60,14 +63,14 @@ class ParkingReservationManager: ObservableObject {
             .sink { [weak self] completion in
                 if case .failure(let error) = completion {
                     self?.isReserving = false
-                    self?.reservationStatus = .failure(error.localizedDescription)
+                    self?.reservationStatus = .failure(ReservationStatus.ReservationError(message: error.localizedDescription, errorCode: 1002))
                 }
             } receiveValue: { [weak self] (isAvailable, paymentValid, userValid) in
                 if isAvailable && paymentValid && userValid {
                     self?.processReservation(request: request)
                 } else {
                     self?.isReserving = false
-                    self?.reservationStatus = .failure("Validation failed")
+                    self?.reservationStatus = .failure(ReservationStatus.ReservationError(message: "Validation failed", errorCode: 1001))
                 }
             }
             .store(in: &cancellables)
@@ -114,7 +117,7 @@ class ParkingReservationManager: ObservableObject {
             
             DispatchQueue.main.async {
                 self?.isReserving = false
-                self?.reservationStatus = .success("Reservation confirmed!")
+                self?.reservationStatus = .success(ReservationStatus.ReservationConfirmation(message: "Reservation confirmed!"))
                 self?.showPaymentView = true
                 
                 // Schedule local notification
@@ -144,4 +147,3 @@ class ParkingReservationManager: ObservableObject {
         UNUserNotificationCenter.current().add(request)
     }
 }
-

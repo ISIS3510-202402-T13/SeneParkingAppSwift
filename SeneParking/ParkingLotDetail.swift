@@ -168,15 +168,15 @@ struct ParkingLotDetailView: View {
     
     private var reservationSection: some View {
         VStack {
-            if case .success(let message) = reservationManager.reservationStatus {
-                Text(message)
+            if case .success(let confirmation) = reservationManager.reservationStatus {
+                Text(confirmation.message)
                     .foregroundColor(.green)
                     .padding()
                     .onAppear {
                         createReservation()
                     }
-            } else if case .failure(let message) = reservationManager.reservationStatus {
-                Text(message)
+            } else if case .failure(let error) = reservationManager.reservationStatus {
+                Text(error.message)
                     .foregroundColor(.red)
                     .padding()
             }
