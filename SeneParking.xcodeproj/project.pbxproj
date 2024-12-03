@@ -134,10 +134,10 @@
 				D48F21882CD1E7A5009A4189 /* ParkingReservationManager.swift */,
 				D48F21852CD08B46009A4189 /* ParkingNotificationManager.swift */,
 				D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */,
-				22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */,
 				D3BDA3062CFA324F00C4BA62 /* PaymentDataManager.swift */,
 				D3BDA3042CFA2C2F00C4BA62 /* PaymentView.swift */,
 				D3BDA3082CFA548B00C4BA62 /* TimeSelectionView.swift */,
+				22BD6E3E2CD8381200EC254A /* ParkingLotRegistration.swift */,
 				224305D42CAB8A390062FC51 /* Assets.xcassets */,
 			);
 			path = SeneParking;
