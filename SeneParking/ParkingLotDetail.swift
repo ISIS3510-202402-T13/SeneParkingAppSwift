@@ -5,113 +5,54 @@ import Combine
 
 struct ParkingLotDetailView: View {
     @State var parkingLot: ParkingLot
-    @State var notificationEnabled = false
+    @State private var notificationEnabled = false
     @State private var hasReserved = false
+    @State private var showPaymentView = false
+    @State private var navigateToMainMap = false
+    @State private var showingConfirmation = false
+    @State private var showingTimeSelection = false
+    @State private var selectedStartTime = Date()
+    @State private var selectedDuration = 1
+    @State private var availableSpots: Int?
+    
     @StateObject private var notificationManager = ParkingNotificationManager.shared
     @StateObject private var reservationManager = ParkingReservationManager()
     @StateObject private var networkMonitor = NetworkMonitor.shared
     
+    enum ReservationStatus: String {
+        case offline = "Offline - Reservations Unavailable"
+        case reserved = "Reservation Made"
+        case processing = "Processing..."
+        case available = "Reserve Spot"
+    }
+
+    enum NotificationState: String {
+        case enabled = "Notifications Enabled"
+        case disabled = "Notify When Lot Opens"
+    }
+    
     init(parkingLot: ParkingLot) {
-           _parkingLot = State(initialValue: parkingLot)
+        _parkingLot = State(initialValue: parkingLot)
     }
     
     private var canMakeReservation: Bool {
-            networkMonitor.isConnected && parkingLot.availableSpots > 0 && !hasReserved
-        }
-        
-    private var reservationButtonText: String {
-            if !networkMonitor.isConnected {
-                return "Offline - Reservations Unavailable"
-            }
-            if hasReserved {
-                return "Reservation Made"
-            }
-            return reservationManager.isReserving ? "Processing..." : "Reserve Spot"
-        }
-    
-    // Simplified function to update spots in Firestore
-    private func updateParkingLotSpots() {
-       guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots/\(parkingLot.id)") else {
-           return
-       }
-       
-       let body: [String: Any] = [
-           "fields": [
-               "availableSpots": ["integerValue": "\(parkingLot.availableSpots)"]
-           ]
-       ]
-       
-       var request = URLRequest(url: url)
-       request.httpMethod = "PATCH"
-       request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-       request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-       
-       URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
-   }
-    
-    
-    private var reservationSection: some View {
-        VStack {
-                if case .success(let message) = reservationManager.reservationStatus {
-                    Text(message)
-                        .foregroundColor(.green)
-                        .padding()
-                } else if case .failure(let message) = reservationManager.reservationStatus {
-                    Text(message)
-                        .foregroundColor(.red)
-                        .padding()
-                }
-            
-                Button(action: {
-                    guard !hasReserved else { return }
-                                   
-                    reservationManager.makeReservation(parkingLot: parkingLot, duration: 3600)
-                   
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                       if case .success = reservationManager.reservationStatus {
-                           withAnimation {
-                               hasReserved = true
-                               var updatedParkingLot = parkingLot
-                               updatedParkingLot.availableSpots -= 1
-                               parkingLot.availableSpots -= 1
-                               parkingLot = updatedParkingLot
-                               updateParkingLotSpots()
-                           }
-                       }
-                    }
-                    
-                    // parkingLot.availableSpots -= 1
-                    // updateParkingLotSpots() // 1 hour
-                }) {
-                    HStack {
-                        Image(systemName: hasReserved ? "checkmark.circle.fill" : "calendar.badge.plus")
-                        Text(reservationButtonText)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(canMakeReservation ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                .disabled(!canMakeReservation || reservationManager.isReserving || hasReserved)
-        }
+        networkMonitor.isConnected && parkingLot.availableSpots > 0 && !hasReserved
     }
+    
+    private var reservationButtonText: String {
+        if !networkMonitor.isConnected {
+            return ReservationStatus.offline.rawValue
+        }
+        if hasReserved {
+            return ReservationStatus.reserved.rawValue
+        }
+        return reservationManager.isReserving ? ReservationStatus.processing.rawValue : ReservationStatus.available.rawValue
+    }
+
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                if !networkMonitor.isConnected {
-                       HStack {
-                           Spacer()
-                           OfflineIndicator()
-                           Spacer()
-                       }
-                       .padding(.top, 8)
-                   }
-                Text(parkingLot.name)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
+            VStack(spacing: 20) {
                 Map(coordinateRegion: .constant(MKCoordinateRegion(
                     center: parkingLot.coordinate,
                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
@@ -135,24 +76,66 @@ struct ParkingLotDetailView: View {
                         .cornerRadius(10)
                 }
                 
-                // Reservation Section
-                if parkingLot.availableSpots > 0
-                {
-                    reservationSection
+                if !hasReserved {
+                    Button(action: {
+                        showingTimeSelection = true
+                    }) {
+                        HStack {
+                            Image(systemName: "clock")
+                            Text("Select Parking Time")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
                 }
+                
+                if let spots = availableSpots {
+                    VStack(alignment: .leading) {
+                        Text("Available Spots at Selected Time")
+                            .font(.headline)
+                        Text("\(spots) spots available")
+                            .font(.title2)
+                            .foregroundColor(spots > 0 ? .green : .red)
+                            
+                        Text("Selected time: \(formatDate(selectedStartTime))")
+                            .font(.subheadline)
+                        Text("Duration: \(selectedDuration) hours")
+                            .font(.subheadline)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                    
+                    if spots > 0 && !hasReserved {
+                        reservationSection
+                    }
+                }
+                
+                VStack(spacing: 12) {
+                    InfoRow(title: "Available Spots", value: "\(parkingLot.availableSpots)")
+                    InfoRow(title: "Available Electric Car Spots", value: "\(parkingLot.availableEVSpots)")
+                    InfoRow(title: "Fare per Day", value: "COP \(parkingLot.farePerDay)")
+                    InfoRow(title: "Opening Hours", value: "\(parkingLot.openTime) - \(parkingLot.closeTime)")
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
                 
                 Button(action: {
                     notificationEnabled.toggle()
                     if notificationEnabled {
-                        toggleParkingLotNotification()
+                        toggleParkingLotNotificationView()
                     } else {
                         ParkingNotificationManager.shared.removeParkingLotNotification(for: parkingLot)
                     }
                 }) {
                     HStack {
                         Image(systemName: notificationEnabled ? "bell.fill" : "bell")
-                            .foregroundColor(.white)
-                        Text(notificationEnabled ? "Notifications Enabled" : "Notify When Lot Opens")
+                        Text(notificationEnabled ? NotificationState.enabled.rawValue : NotificationState.disabled.rawValue)
                             .foregroundColor(.white)
                     }
                     .frame(maxWidth: .infinity)
@@ -160,64 +143,175 @@ struct ParkingLotDetailView: View {
                     .background(notificationEnabled ? Color.green : Color.blue)
                     .cornerRadius(10)
                 }
-                
-                // Test button after your "GO" button
-                Button(action: {
-                    testRealNotification()
-                }) {
-                    Text("Test Opening Notification")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .cornerRadius(10)
-                }
-                
-                InfoRow(title: "Available Spots", value: "\(parkingLot.availableSpots)")
-                InfoRow(title: "Available Electric Car Spots", value: "\(parkingLot.availableEVSpots)")
-                InfoRow(title: "Fare per Day", value: "COP \(parkingLot.farePerDay)")
-                InfoRow(title: "Opening Hours", value: "\(parkingLot.openTime) - \(parkingLot.closeTime)")
             }
             .padding()
         }
         .navigationTitle("Parking Lot Details")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingTimeSelection) {
+            NavigationView {
+                TimeSelectionView(selectedStartTime: $selectedStartTime, selectedDuration: $selectedDuration)
+                    .navigationTitle("Select Time")
+                    .navigationBarItems(trailing: Button("Done") {
+                        showingTimeSelection = false
+                        checkAvailability()
+                    })
+            }
+        }
+        .navigationDestination(isPresented: $showPaymentView) {
+            PaymentView(
+                parkingLot: parkingLot,
+                reservationDuration: TimeInterval(selectedDuration * 3600)
+            )
+        }
     }
-        
     
-    // BORRAR DESPUES DEL VIVA VOCE
-    func testRealNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "Parking Lot Opening Soon"
-        content.body = "\(parkingLot.name) will open at \(parkingLot.openTime). Don't miss your spot!"
-        content.sound = .default
-        
-        // Create trigger for 5 seconds from now
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
-        
-        // Create unique identifier for this test
-        let identifier = "parkingLot-\(parkingLot.id)-test"
-        
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { success, error in
-            if success {
-                UNUserNotificationCenter.current().add(request) { error in
-                    if let error = error {
-                        print("Error scheduling test notification: \(error.localizedDescription)")
-                    } else {
-                        print("Successfully scheduled test notification for \(parkingLot.name)")
+    private var reservationSection: some View {
+        VStack {
+            if case .success(let confirmation) = reservationManager.reservationStatus {
+                Text(confirmation.message)
+                    .foregroundColor(.green)
+                    .padding()
+                    .onAppear {
+                        createReservation()
                     }
+            } else if case .failure(let error) = reservationManager.reservationStatus {
+                Text(error.message)
+                    .foregroundColor(.red)
+                    .padding()
+            }
+            
+            if !hasReserved {
+                Button(action: {
+                    reservationManager.makeReservation(
+                        parkingLot: parkingLot,
+                        duration: TimeInterval(selectedDuration * 3600)
+                    )
+                }) {
+                    HStack {
+                        Image(systemName: "calendar.badge.plus")
+                        Text(reservationButtonText)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        canMakeReservation && !reservationManager.isReserving
+                            ? Color.blue
+                            : Color.gray
+                    )
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
+                .disabled(!canMakeReservation || reservationManager.isReserving)
             }
         }
     }
     
-    func formatTime(_ date: Date) -> String {
+    private func checkAvailability() {
+        guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/reservations") else {
+            return
+        }
+        
+        let endTime = Calendar.current.date(byAdding: .hour, value: selectedDuration, to: selectedStartTime)!
+        
+        let queryParams = [
+            "structuredQuery": [
+                "where": [
+                    "compositeFilter": [
+                        "op": "AND",
+                        "filters": [
+                            [
+                                "fieldFilter": [
+                                    "field": ["fieldPath": "parkingLotId"],
+                                    "op": "EQUAL",
+                                    "value": ["stringValue": parkingLot.id]
+                                ]
+                            ],
+                            [
+                                "fieldFilter": [
+                                    "field": ["fieldPath": "startTime"],
+                                    "op": "LESS_THAN",
+                                    "value": ["timestampValue": ISO8601DateFormatter().string(from: endTime)]
+                                ]
+                            ],
+                            [
+                                "fieldFilter": [
+                                    "field": ["fieldPath": "endTime"],
+                                    "op": "GREATER_THAN",
+                                    "value": ["timestampValue": ISO8601DateFormatter().string(from: selectedStartTime)]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: queryParams)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let data = data,
+                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let documents = json["documents"] as? [[String: Any]] {
+                    let overlappingReservations = documents.count
+                    self.availableSpots = max(0, self.parkingLot.availableSpots - overlappingReservations)
+                } else {
+                    self.availableSpots = self.parkingLot.availableSpots
+                }
+            }
+        }.resume()
+    }
+    
+    private func createReservation() {
+        guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/reservations") else {
+            return
+        }
+        
+        let endTime = Calendar.current.date(byAdding: .hour, value: selectedDuration, to: selectedStartTime)!
+        
+        let reservationData: [String: Any] = [
+            "fields": [
+                "parkingLotId": ["stringValue": parkingLot.id],
+                "startTime": ["timestampValue": ISO8601DateFormatter().string(from: selectedStartTime)],
+                "endTime": ["timestampValue": ISO8601DateFormatter().string(from: endTime)],
+                "userId": ["stringValue": "current-user-id"] // Replace with actual user ID when authentication is implemented
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: reservationData)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if error == nil {
+                    self.hasReserved = true
+                    self.showPaymentView = true
+                    if let currentSpots = self.availableSpots {
+                        self.availableSpots = currentSpots - 1
+                    }
+                }
+            }
+        }.resume()
+    }
+    
+    private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.timeStyle = .short
+        formatter.dateFormat = "MMM d, h:mm a"
         return formatter.string(from: date)
+    }
+    
+    func toggleParkingLotNotificationView() {
+        if notificationManager.isPermissionGranted {
+            notificationManager.scheduleParkingLotOpeningNotification(for: parkingLot)
+        } else {
+            notificationManager.requestPermission()
+        }
     }
 }
 
