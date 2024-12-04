@@ -21,10 +21,18 @@ struct PaymentHistory: Codable {
     }
 }
 
-struct SavedCard: Codable {
+struct SavedCard: Identifiable, Codable {
+    let id: UUID
     let lastFourDigits: String
     let cardHolderName: String
     let isDefault: Bool
+    
+    init(lastFourDigits: String, cardHolderName: String, isDefault: Bool) {
+        self.id = UUID()
+        self.lastFourDigits = lastFourDigits
+        self.cardHolderName = cardHolderName
+        self.isDefault = isDefault
+    }
 }
 
 class PaymentDataManager {

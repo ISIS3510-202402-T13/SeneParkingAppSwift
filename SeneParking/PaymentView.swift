@@ -1,10 +1,3 @@
-//
-//  PaymentView.swift
-//  SeneParking
-//
-//  Created by Pablo Pastrana on 27/11/24.
-//
-
 import SwiftUI
 
 struct PaymentView: View {
@@ -14,9 +7,10 @@ struct PaymentView: View {
     @State private var isProcessing = false
     @State private var showingConfirmation = false
     @State private var paymentError: String? = nil
-    @State private var shouldSaveCard = false  // Add this line
+    @State private var shouldSaveCard = false
+    @State private var navigateToReservations = false
+    @State private var isSavedCardSelected = false
     @Environment(\.presentationMode) var presentationMode
-    @State private var navigateToMainMap = false
     
     // Credit card form states
     @State private var cardNumber = ""
@@ -32,8 +26,7 @@ struct PaymentView: View {
     }
     
     private var totalAmount: Double {
-        // Calculate based on parking lot fare and duration
-        let hours = ceil(reservationDuration / 3600) // Convert seconds to hours, rounding up
+        let hours = ceil(reservationDuration / 3600)
         return Double(parkingLot.farePerDay) * (hours / 24.0)
     }
     
@@ -41,43 +34,39 @@ struct PaymentView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Payment Summary
                     PaymentSummaryCard(
                         parkingLotName: parkingLot.name,
                         duration: reservationDuration,
                         amount: totalAmount
                     )
                     
-                    // Payment Method Selection
                     PaymentMethodSelector(
                         selectedMethod: $selectedPaymentMethod
                     )
                     
-                    // Credit Card Form
                     if selectedPaymentMethod == .creditCard || selectedPaymentMethod == .debit {
                         CreditCardForm(
                             cardNumber: $cardNumber,
                             cardHolderName: $cardHolderName,
                             expiryDate: $expiryDate,
-                            cvv: $cvv
+                            cvv: $cvv,
+                            shouldSaveCard: $shouldSaveCard,
+                            isSavedCardSelected: $isSavedCardSelected
                         )
                     }
                     
-                    // Digital Payment Instructions
                     if selectedPaymentMethod == .nequi || selectedPaymentMethod == .daviplata {
                         DigitalPaymentInstructions(
                             paymentMethod: selectedPaymentMethod
                         )
                     }
                     
-                    // Error Message
                     if let error = paymentError {
                         Text(error)
                             .foregroundColor(.red)
                             .padding()
                     }
                     
-                    // Pay Button
                     Button(action: processPayment) {
                         HStack {
                             if isProcessing {
@@ -94,12 +83,13 @@ struct PaymentView: View {
                         .cornerRadius(10)
                     }
                     .disabled(isProcessing || !isFormValid())
+                    
                     Divider()
-                    .padding(.vertical)
-                   
-                   PaymentHistorySection()
-               }
-               .padding()
+                        .padding(.vertical)
+                    
+                    PaymentHistorySection()
+                }
+                .padding()
             }
             .navigationTitle("Payment")
             .navigationBarTitleDisplayMode(.inline)
@@ -108,58 +98,111 @@ struct PaymentView: View {
                     title: Text("Payment Successful"),
                     message: Text("Your parking spot has been reserved."),
                     dismissButton: .default(Text("OK")) {
-                        navigateToMainMap = true
+                        navigateToReservations = true
                     }
                 )
             }
         }
-        .navigationDestination(isPresented: $navigateToMainMap) {
-            MainMapView()
+        .navigationDestination(isPresented: $navigateToReservations) {
+            MyReservationsView()
         }
     }
     
     private func processPayment() {
-           isProcessing = true
-           paymentError = nil
-           
-           let workItem = DispatchWorkItem {
-               // Simulate success scenario (90% success rate)
-               let success = Double.random(in: 0...1) < 0.9
-               
-               self.isProcessing = false
-               
-               if success {
-                   // Save payment history
-                   let lastFour = String(self.cardNumber.filter { $0.isNumber }.suffix(4))
-                   PaymentDataManager.shared.savePaymentToHistory(
-                       parkingLot: self.parkingLot.name,
-                       amount: self.totalAmount,
-                       lastFourDigits: lastFour
-                   )
-                   
-                   // Save card if user opted to
-                   if self.selectedPaymentMethod == .creditCard && self.shouldSaveCard {
-                       PaymentDataManager.shared.saveCard(
-                           lastFourDigits: lastFour,
-                           cardHolderName: self.cardHolderName,
-                           makeDefault: true
-                       )
-                   }
-                   
-                   self.showingConfirmation = true
-               } else {
-                   self.paymentError = "Payment failed. Please try again."
-               }
-           }
-           
-           // Schedule the work item to execute after 2 seconds
-           DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2, execute: workItem)
-       }
-   
+        isProcessing = true
+        paymentError = nil
+
+        let workItem = DispatchWorkItem {
+            let success = Double.random(in: 0...1) < 0.9
+            
+            DispatchQueue.main.async {
+                self.isProcessing = false
+                
+                if success {
+                    let lastFour = String(self.cardNumber.filter { $0.isNumber }.suffix(4))
+                    PaymentDataManager.shared.savePaymentToHistory(
+                        parkingLot: self.parkingLot.name,
+                        amount: self.totalAmount,
+                        lastFourDigits: lastFour
+                    )
+
+                    if self.shouldSaveCard {
+                        PaymentDataManager.shared.saveCard(
+                            lastFourDigits: lastFour,
+                            cardHolderName: self.cardHolderName,
+                            makeDefault: true
+                        )
+                    }
+                    
+                    self.createReservationRecord(
+                        parkingLotId: self.parkingLot.id,
+                        parkingLotName: self.parkingLot.name,
+                        startTime: Date(),
+                        duration: self.reservationDuration,
+                        fareAmount: self.totalAmount
+                    )
+                    
+                    self.showingConfirmation = true
+                } else {
+                    self.paymentError = "Payment failed. Please try again."
+                }
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2, execute: workItem)
+    }
+
+    private func createReservationRecord(parkingLotId: String, parkingLotName: String, startTime: Date, duration: TimeInterval, fareAmount: Double) {
+        guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/reservations") else {
+            return
+        }
+        
+        let endTime = startTime.addingTimeInterval(duration)
+        let dateFormatter = ISO8601DateFormatter()
+
+        let reservationData: [String: Any] = [
+            "fields": [
+                "parkingLotId": ["stringValue": parkingLotId],
+                "parkingLotName": ["stringValue": parkingLotName],
+                "startTime": ["timestampValue": dateFormatter.string(from: startTime)],
+                "endTime": ["timestampValue": dateFormatter.string(from: endTime)],
+                "status": ["stringValue": "upcoming"],
+                "fareAmount": ["doubleValue": fareAmount],
+                "userId": ["stringValue": "current-user-id"]
+            ]
+        ]
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: reservationData)
+        } catch {
+            print("Error encoding reservation data: \(error.localizedDescription)")
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error creating reservation: \(error.localizedDescription)")
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse,
+               !(200...299).contains(httpResponse.statusCode) {
+                print("Error creating reservation: HTTP \(httpResponse.statusCode)")
+                return
+            }
+        }.resume()
+    }
     
     private func isFormValid() -> Bool {
         switch selectedPaymentMethod {
         case .creditCard, .debit:
+            if isSavedCardSelected {
+                return cvv.count == 3
+            }
             return cardNumber.count >= 16 &&
                    !cardHolderName.isEmpty &&
                    expiryDate.count == 5 &&
@@ -228,6 +271,21 @@ struct PaymentMethodSelector: View {
     }
 }
 
+struct PaymentInfoRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .fontWeight(.medium)
+        }
+    }
+}
+
 struct PaymentHistorySection: View {
     private let payments = PaymentDataManager.shared.getPaymentHistory()
     
@@ -270,247 +328,6 @@ struct PaymentHistorySection: View {
     }
 }
 
-struct CreditCardForm: View {
-    @Binding var cardNumber: String
-    @Binding var cardHolderName: String
-    @Binding var expiryDate: String
-    @Binding var cvv: String
-    @State private var selectedSavedCard: SavedCard?
-    
-    // Error states
-    @State private var cardNumberError: String?
-    @State private var cardHolderError: String?
-    @State private var expiryError: String?
-    @State private var cvvError: String?
-    
-    private let savedCards = PaymentDataManager.shared.getSavedCards()
-    @State private var shouldSaveCard = false
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Card Details")
-                .font(.headline)
-            
-            if !savedCards.isEmpty {
-                savedCardsSection
-            }
-            
-            customCardForm
-            
-            if cardNumber.count >= 15 {
-                Toggle("Save card for future payments", isOn: $shouldSaveCard)
-                    .font(.footnote)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
-    }
-    
-    private var savedCardsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Saved Cards")
-                .font(.subheadline)
-            
-            ForEach(savedCards, id: \.lastFourDigits) { card in
-                Button(action: { selectSavedCard(card) }) {
-                    HStack {
-                        Image(systemName: selectedSavedCard?.lastFourDigits == card.lastFourDigits
-                              ? "checkmark.circle.fill" : "circle")
-                        VStack(alignment: .leading) {
-                            Text("•••• \(card.lastFourDigits)")
-                            Text(card.cardHolderName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        if card.isDefault {
-                            Text("Default")
-                                .font(.caption)
-                                .padding(4)
-                                .background(Color.blue.opacity(0.2))
-                                .cornerRadius(4)
-                        }
-                    }
-                }
-                .foregroundColor(.primary)
-            }
-            
-            Divider()
-                .padding(.vertical)
-        }
-    }
-    
-    private var customCardForm: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            VStack(alignment: .leading) {
-                TextField("Card Number", text: $cardNumber)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: cardNumber) { newValue in
-                        formatCardNumber()
-                        validateCardNumber()
-                    }
-                
-                if let error = cardNumberError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                }
-            }
-            
-            VStack(alignment: .leading) {
-                TextField("Cardholder Name", text: $cardHolderName)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: cardHolderName) { _ in
-                        validateCardHolder()
-                    }
-                
-                if let error = cardHolderError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                }
-            }
-            
-            HStack {
-                VStack(alignment: .leading) {
-                    TextField("MM/YY", text: $expiryDate)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                        .onChange(of: expiryDate) { _ in
-                            formatExpiryDate()
-                            validateExpiryDate()
-                        }
-                    
-                    if let error = expiryError {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
-                }
-                
-                VStack(alignment: .leading) {
-                    TextField("CVV", text: $cvv)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                        .onChange(of: cvv) { _ in
-                            validateCVV()
-                        }
-                    
-                    if let error = cvvError {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
-                }
-            }
-        }
-    }
-    
-    private func selectSavedCard(_ card: SavedCard) {
-        selectedSavedCard = card
-        cardHolderName = card.cardHolderName
-        cardNumber = "•••• •••• •••• " + card.lastFourDigits
-        // Clear other fields as they need to be entered fresh for security
-        expiryDate = ""
-        cvv = ""
-    }
-    
-    private func formatCardNumber() {
-        // Remove any non-digits
-        var cleaned = cardNumber.filter { $0.isNumber }
-        
-        // Limit to 16 digits
-        cleaned = String(cleaned.prefix(16))
-        
-        // Add spaces every 4 digits
-        var formatted = ""
-        for (index, character) in cleaned.enumerated() {
-            if index > 0 && index % 4 == 0 {
-                formatted += " "
-            }
-            formatted += String(character)
-        }
-        
-        cardNumber = formatted
-    }
-    
-    private func validateCardNumber() {
-        let digits = cardNumber.filter { $0.isNumber }
-        if digits.isEmpty {
-            cardNumberError = "Card number is required"
-        } else if digits.count < 16 {
-            cardNumberError = "Card number must be 16 digits"
-        } else {
-            cardNumberError = nil
-        }
-    }
-    
-    private func validateCardHolder() {
-        if cardHolderName.isEmpty {
-            cardHolderError = "Cardholder name is required"
-        } else if cardHolderName.count < 3 {
-            cardHolderError = "Please enter full name"
-        } else {
-            cardHolderError = nil
-        }
-    }
-    
-    private func formatExpiryDate() {
-        var cleaned = expiryDate.filter { $0.isNumber }
-        cleaned = String(cleaned.prefix(4))
-        
-        if cleaned.count >= 2 {
-            let month = String(cleaned.prefix(2))
-            let remaining = String(cleaned.dropFirst(2))
-            
-            // Validate month
-            if let monthNum = Int(month), monthNum >= 1 && monthNum <= 12 {
-                expiryDate = "\(month)/\(remaining)"
-            } else {
-                expiryDate = ""
-                expiryError = "Invalid month"
-            }
-        } else {
-            expiryDate = cleaned
-        }
-    }
-    
-    private func validateExpiryDate() {
-        let components = expiryDate.split(separator: "/")
-        guard components.count == 2,
-              let month = Int(components[0]),
-              let year = Int(components[1]) else {
-            expiryError = "Invalid expiry date"
-            return
-        }
-        
-        let currentYear = Calendar.current.component(.year, from: Date()) % 100
-        let currentMonth = Calendar.current.component(.month, from: Date())
-        
-        if year < currentYear || (year == currentYear && month < currentMonth) {
-            expiryError = "Card has expired"
-        } else {
-            expiryError = nil
-        }
-    }
-    
-    private func validateCVV() {
-        let digits = cvv.filter { $0.isNumber }
-        cvv = String(digits.prefix(3))
-        
-        if digits.isEmpty {
-            cvvError = "CVV is required"
-        } else if digits.count < 3 {
-            cvvError = "CVV must be 3 digits"
-        } else {
-            cvvError = nil
-        }
-    }
-}
-   
-
 struct DigitalPaymentInstructions: View {
     let paymentMethod: PaymentView.PaymentMethod
     
@@ -533,20 +350,5 @@ struct DigitalPaymentInstructions: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(10)
-    }
-}
-
-struct PaymentInfoRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(value)
-                .fontWeight(.medium)
-        }
     }
 }

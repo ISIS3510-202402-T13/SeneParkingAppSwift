@@ -103,8 +103,8 @@ struct ParkingLotDetailView: View {
                 }
                 
                 VStack(spacing: 12) {
-                    InfoRow(title: "Available Spots", value: "\(parkingLot.availableSpots)")
-                    InfoRow(title: "Available Electric Car Spots", value: "\(parkingLot.availableEVSpots)")
+                    InfoRow(title: "Total Spots", value: "\(parkingLot.availableSpots)")
+                    InfoRow(title: "Total Electric Car Spots", value: "\(parkingLot.availableEVSpots)")
                     InfoRow(title: "Fare per Day", value: "COP \(parkingLot.farePerDay)")
                     InfoRow(title: "Opening Hours", value: "\(parkingLot.openTime) - \(parkingLot.closeTime)")
                 }
