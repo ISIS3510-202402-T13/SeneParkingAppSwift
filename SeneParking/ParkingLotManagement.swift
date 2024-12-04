@@ -8,6 +8,7 @@ struct ParkingLotManagementView: View {
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
     @State private var isSaving = false
+    @State private var showSaveConfirmation = false // Added state for save confirmation message
     
     var body: some View {
         NavigationStack {
@@ -29,40 +30,38 @@ struct ParkingLotManagementView: View {
                             .font(.largeTitle)
                             .foregroundColor(.white)
                             .fontWeight(.bold)
+                            .padding(.bottom, 10)
                         
                         Group {
-                            Text("Name: \(data.name)")
-                            Text("Location: \(data.latitude), \(data.longitude)")
-                            Text("Open Time: \(data.openTime)")
-                            Text("Close Time: \(data.closeTime)")
-                            Text("Fare Per Day: $\(data.farePerDay)")
+                            infoRow(label: "Name:", value: data.name)
+                            infoRow(label: "Location:", value: "\(data.latitude), \(data.longitude)")
+                            infoRow(label: "Open Time:", value: data.openTime)
+                            infoRow(label: "Close Time:", value: data.closeTime)
+                            infoRow(label: "Fare Per Day:", value: "$\(data.farePerDay)")
                         }
-                        .foregroundColor(.white)
                         
                         Spacer()
                         
                         // Modify Available Spots
-                        HStack {
-                            Text("Available Spots:")
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Available Spots")
                                 .foregroundColor(.white)
                             TextField("Available Spots", value: $availableSpots, formatter: NumberFormatter())
                                 .keyboardType(.numberPad)
                                 .padding()
                                 .background(Color.white)
                                 .cornerRadius(10)
-                                .frame(width: 100)
                         }
                         
                         // Modify EV Spots
-                        HStack {
-                            Text("EV Spots:")
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Available EV Spots")
                                 .foregroundColor(.white)
                             TextField("Available EV Spots", value: $availableEVSpots, formatter: NumberFormatter())
                                 .keyboardType(.numberPad)
                                 .padding()
                                 .background(Color.white)
                                 .cornerRadius(10)
-                                .frame(width: 100)
                         }
                         
                         Spacer()
@@ -72,7 +71,6 @@ struct ParkingLotManagementView: View {
                             if isSaving {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .frame(height: 20)
                             } else {
                                 Text("Save Changes")
                                     .frame(maxWidth: .infinity)
@@ -83,6 +81,13 @@ struct ParkingLotManagementView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        
+                        // Save Confirmation Message
+                        if showSaveConfirmation {
+                            Text("Changes saved successfully!")
+                                .foregroundColor(.green)
+                                .padding(.top, 10)
+                        }
                         
                         Spacer()
                     }
@@ -181,9 +186,27 @@ struct ParkingLotManagementView: View {
                     return
                 }
                 
-                errorMessage = "Changes saved successfully!"
+                showSaveConfirmation = true
+                
+                // Hide confirmation after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showSaveConfirmation = false
+                }
             }
         }.resume()
+    }
+    
+    // Helper for info rows
+    private func infoRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.white)
+                .fontWeight(.bold)
+            Spacer()
+            Text(value)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal)
     }
 }
 

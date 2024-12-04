@@ -22,7 +22,9 @@ struct RegisterParkingLotView: View {
     @State private var longitudeError: String? = nil
     @State private var latitudeError: String? = nil
     @State private var availableEVSpotsError: String? = nil
-
+    
+    @State private var navigateToOwner = true
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -137,6 +139,25 @@ struct RegisterParkingLotView: View {
                 EmptyView()
             }
         )
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    navigateToOwner = true
+                    print(navigateToOwner)
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.black)
+                        .imageScale(.large)
+                        .padding()
+                }
+            }
+        }
+        .background(
+            NavigationLink(destination: ParkingLotOwner(), isActive: $navigateToOwner) {
+                EmptyView()
+            }
+        )
+        .navigationBarBackButtonHidden(true)
         .onAppear(perform: clearFields)
     }
     
