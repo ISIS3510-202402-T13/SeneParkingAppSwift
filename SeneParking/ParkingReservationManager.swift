@@ -8,12 +8,6 @@ struct ReservationRequest: Codable {
     let duration: TimeInterval
 }
 
-struct ReservationResponse: Codable {
-    let reservationId: String
-    let status: String
-    let message: String
-}
-
 class ParkingReservationManager: ObservableObject {
     @Published var isReserving = false
     @Published var reservationStatus: ReservationStatus = .idle
@@ -23,20 +17,10 @@ class ParkingReservationManager: ObservableObject {
     enum ReservationStatus {
         case idle
         case processing
-        case success(ReservationConfirmation)
-        case failure(ReservationError)
-        
-        struct ReservationConfirmation {
-            let message: String
-        }
-        
-        struct ReservationError {
-            let message: String
-            let errorCode: Int
-        }
+        case success(String)
+        case failure(String)
     }
     
-    // M.Optimization: Updated makeReservation function with enum-based messaging
     func makeReservation(parkingLot: ParkingLot, duration: TimeInterval) {
         guard !isReserving else { return }
         isReserving = true
@@ -63,14 +47,14 @@ class ParkingReservationManager: ObservableObject {
             .sink { [weak self] completion in
                 if case .failure(let error) = completion {
                     self?.isReserving = false
-                    self?.reservationStatus = .failure(ReservationStatus.ReservationError(message: error.localizedDescription, errorCode: 1002))
+                    self?.reservationStatus = .failure(error.localizedDescription)
                 }
             } receiveValue: { [weak self] (isAvailable, paymentValid, userValid) in
                 if isAvailable && paymentValid && userValid {
                     self?.processReservation(request: request)
                 } else {
                     self?.isReserving = false
-                    self?.reservationStatus = .failure(ReservationStatus.ReservationError(message: "Validation failed", errorCode: 1001))
+                    self?.reservationStatus = .failure("Validation failed")
                 }
             }
             .store(in: &cancellables)
@@ -117,7 +101,7 @@ class ParkingReservationManager: ObservableObject {
             
             DispatchQueue.main.async {
                 self?.isReserving = false
-                self?.reservationStatus = .success(ReservationStatus.ReservationConfirmation(message: "Reservation confirmed!"))
+                self?.reservationStatus = .success("Reservation confirmed!")
                 self?.showPaymentView = true
                 
                 // Schedule local notification

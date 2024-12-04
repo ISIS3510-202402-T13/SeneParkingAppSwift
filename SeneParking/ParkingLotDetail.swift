@@ -19,18 +19,6 @@ struct ParkingLotDetailView: View {
     @StateObject private var reservationManager = ParkingReservationManager()
     @StateObject private var networkMonitor = NetworkMonitor.shared
     
-    enum ReservationStatus: String {
-        case offline = "Offline - Reservations Unavailable"
-        case reserved = "Reservation Made"
-        case processing = "Processing..."
-        case available = "Reserve Spot"
-    }
-
-    enum NotificationState: String {
-        case enabled = "Notifications Enabled"
-        case disabled = "Notify When Lot Opens"
-    }
-    
     init(parkingLot: ParkingLot) {
         _parkingLot = State(initialValue: parkingLot)
     }
@@ -41,14 +29,13 @@ struct ParkingLotDetailView: View {
     
     private var reservationButtonText: String {
         if !networkMonitor.isConnected {
-            return ReservationStatus.offline.rawValue
+            return "Offline - Reservations Unavailable"
         }
         if hasReserved {
-            return ReservationStatus.reserved.rawValue
+            return "Reservation Made"
         }
-        return reservationManager.isReserving ? ReservationStatus.processing.rawValue : ReservationStatus.available.rawValue
+        return reservationManager.isReserving ? "Processing..." : "Reserve Spot"
     }
-
     
     var body: some View {
         ScrollView {
@@ -116,8 +103,8 @@ struct ParkingLotDetailView: View {
                 }
                 
                 VStack(spacing: 12) {
-                    InfoRow(title: "Available Spots", value: "\(parkingLot.availableSpots)")
-                    InfoRow(title: "Available Electric Car Spots", value: "\(parkingLot.availableEVSpots)")
+                    InfoRow(title: "Total Spots", value: "\(parkingLot.availableSpots)")
+                    InfoRow(title: "Total Electric Car Spots", value: "\(parkingLot.availableEVSpots)")
                     InfoRow(title: "Fare per Day", value: "COP \(parkingLot.farePerDay)")
                     InfoRow(title: "Opening Hours", value: "\(parkingLot.openTime) - \(parkingLot.closeTime)")
                 }
@@ -135,7 +122,7 @@ struct ParkingLotDetailView: View {
                 }) {
                     HStack {
                         Image(systemName: notificationEnabled ? "bell.fill" : "bell")
-                        Text(notificationEnabled ? NotificationState.enabled.rawValue : NotificationState.disabled.rawValue)
+                        Text(notificationEnabled ? "Notifications Enabled" : "Notify When Lot Opens")
                             .foregroundColor(.white)
                     }
                     .frame(maxWidth: .infinity)
@@ -168,15 +155,15 @@ struct ParkingLotDetailView: View {
     
     private var reservationSection: some View {
         VStack {
-            if case .success(let confirmation) = reservationManager.reservationStatus {
-                Text(confirmation.message)
+            if case .success(let message) = reservationManager.reservationStatus {
+                Text(message)
                     .foregroundColor(.green)
                     .padding()
                     .onAppear {
                         createReservation()
                     }
-            } else if case .failure(let error) = reservationManager.reservationStatus {
-                Text(error.message)
+            } else if case .failure(let message) = reservationManager.reservationStatus {
+                Text(message)
                     .foregroundColor(.red)
                     .padding()
             }

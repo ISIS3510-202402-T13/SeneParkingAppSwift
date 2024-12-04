@@ -68,6 +68,7 @@ struct MainMapView: View {
     @State private var showEVOnly = false
     @State private var parkingLots: [ParkingLot] = []
     @State private var cachedParkingLots: [ParkingLot] = [] // Cache variable
+    @State private var showMyReservations = false
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 4.6015, longitude: -74.0655),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
@@ -100,6 +101,22 @@ struct MainMapView: View {
                         .background(Color.white.opacity(0.8))
                         .cornerRadius(10)
                         .padding(.top)
+                    
+                    HStack {
+                            Button(action: {
+                                showMyReservations = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "list.bullet.clipboard")
+                                    Text("My Reservations")
+                                }
+                                .padding()
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(10)
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal)
                     
                     if !NetworkMonitor.shared.isConnected {
                         OfflineIndicator()
@@ -146,13 +163,16 @@ struct MainMapView: View {
                             .frame(width: 150)
                     }
                     .padding()
+                    }
                 }
+                .navigationDestination(isPresented: $showMyReservations) {
+                    MyReservationsView()
+                }
+                .navigationBarHidden(true)
+                .onAppear(perform: fetchParkingLots)
             }
             .navigationBarHidden(true)
-            .onAppear(perform: fetchParkingLots)
         }
-        .navigationBarHidden(true)
-    }
 
     func incrementWeekdayCounter() {
         // Get the current day of the week in English and capitalize it
@@ -333,3 +353,4 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         self.location = location
     }
 }
+

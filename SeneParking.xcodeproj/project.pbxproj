@@ -21,6 +21,8 @@
 		D3BDA3052CFA2C3600C4BA62 /* PaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BDA3042CFA2C2F00C4BA62 /* PaymentView.swift */; };
 		D3BDA3072CFA325200C4BA62 /* PaymentDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BDA3062CFA324F00C4BA62 /* PaymentDataManager.swift */; };
 		D3BDA3092CFA549500C4BA62 /* TimeSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BDA3082CFA548B00C4BA62 /* TimeSelectionView.swift */; };
+		D3BDA30F2CFFEBBB00C4BA62 /* MyReservations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BDA30E2CFFEBB500C4BA62 /* MyReservations.swift */; };
+		D3BDA3112CFFEBDE00C4BA62 /* CreditCardForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BDA3102CFFEBDA00C4BA62 /* CreditCardForm.swift */; };
 		D43498772CC227B500E807ED /* SignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43498762CC227B200E807ED /* SignIn.swift */; };
 		D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */; };
 		D44B86F42CE7931400F1B12F /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D44B86F32CE7930C00F1B12F /* NetworkMonitor.swift */; };
@@ -66,6 +68,8 @@
 		D3BDA3042CFA2C2F00C4BA62 /* PaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentView.swift; sourceTree = "<group>"; };
 		D3BDA3062CFA324F00C4BA62 /* PaymentDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentDataManager.swift; sourceTree = "<group>"; };
 		D3BDA3082CFA548B00C4BA62 /* TimeSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSelectionView.swift; sourceTree = "<group>"; };
+		D3BDA30E2CFFEBB500C4BA62 /* MyReservations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyReservations.swift; sourceTree = "<group>"; };
+		D3BDA3102CFFEBDA00C4BA62 /* CreditCardForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditCardForm.swift; sourceTree = "<group>"; };
 		D43498762CC227B200E807ED /* SignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignIn.swift; sourceTree = "<group>"; };
 		D441141D2CC210A400A5C702 /* LicensePlateRecognitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicensePlateRecognitionView.swift; sourceTree = "<group>"; };
 		D441141F2CC211BA00A5C702 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -125,6 +129,8 @@
 		224305CF2CAB8A370062FC51 /* SeneParking */ = {
 			isa = PBXGroup;
 			children = (
+				D3BDA3102CFFEBDA00C4BA62 /* CreditCardForm.swift */,
+				D3BDA30E2CFFEBB500C4BA62 /* MyReservations.swift */,
 				D441141F2CC211BA00A5C702 /* Info.plist */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
 				D44B86F52CE7935000F1B12F /* OfflineDataManager.swift */,
@@ -308,6 +314,8 @@
 				D48F21862CD08B4A009A4189 /* ParkingNotificationManager.swift in Sources */,
 				22C468D12CAD9FC900539A79 /* SignUp.swift in Sources */,
 				D441141E2CC210B900A5C702 /* LicensePlateRecognitionView.swift in Sources */,
+				D3BDA30F2CFFEBBB00C4BA62 /* MyReservations.swift in Sources */,
+				D3BDA3112CFFEBDE00C4BA62 /* CreditCardForm.swift in Sources */,
 				225A91A42CFFBB6800A98DCB /* ParkingLotManagement.swift in Sources */,
 				D43498772CC227B500E807ED /* SignIn.swift in Sources */,
 				224305D12CAB8A370062FC51 /* SeneParkingApp.swift in Sources */,
