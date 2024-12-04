@@ -3,7 +3,6 @@ import SwiftUI
 struct ParkingLotOwner: View {
     @State private var parkingLotID: String = ""
     @State private var navigateToManagement = false
-    @State private var navigateToRegistration = false
     @State private var errorMessage: String? = nil  // Error message state
     
     @AppStorage("parkingID") private var storedID: String = ""
@@ -42,7 +41,9 @@ struct ParkingLotOwner: View {
                     }
                     
                     // Navigate to Parking Lot Management
-                    NavigationLink(destination: ParkingLotManagementView(parkingLotID: parkingLotID)) {
+                    Button(action: {
+                        validateParkingLotID()
+                    }) {
                         Text("Go to Parking Lot Management")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -61,7 +62,16 @@ struct ParkingLotOwner: View {
                             .foregroundColor(.red)
                             .cornerRadius(10)
                     }
+                    
                     .padding(.horizontal, 20)
+                    
+                    // Conditional NavigationLink
+                    NavigationLink(
+                        destination: ParkingLotManagementView(parkingLotID: parkingLotID),
+                        isActive: $navigateToManagement
+                    ) {
+                        EmptyView() // Hidden link, triggered by state
+                    }
                     
                     Spacer()
                 }

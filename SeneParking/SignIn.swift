@@ -148,6 +148,85 @@ struct SignInView: View {
         }
     }
     
+    func incrementWeekdayCounter() {
+        // Get the current day of the week in English and capitalize it
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US") // Ensure English locale
+        dateFormatter.dateFormat = "EEEE" // Full weekday name
+        
+        let weekday = dateFormatter.string(from: Date()) // Capitalized weekday name
+
+        // Define the URL to fetch the document
+        guard let fetchUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SzkDDfUxEKfSFVblmq9O") else {
+            print("Invalid URL for Firebase fetch")
+            return
+        }
+        
+        // Fetch the current value
+        URLSession.shared.dataTask(with: fetchUrl) { data, response, error in
+            if let error = error {
+                print("Error fetching current counter: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let fields = json["fields"] as? [String: Any],
+                   let weekdayField = fields[weekday] as? [String: Any],
+                   let currentValueString = weekdayField["integerValue"] as? String,
+                   let currentValue = Int(currentValueString) {
+                    
+                    // Increment the current value by 1
+                    let updatedValue = currentValue + 1
+                    
+                    // Define the URL with document path for updating
+                    guard let updateUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SzkDDfUxEKfSFVblmq9O?updateMask.fieldPaths=\(weekday)") else {
+                        print("Invalid URL for Firebase update")
+                        return
+                    }
+
+                    // Define the request payload with updated value
+                    let payload: [String: Any] = [
+                        "fields": [
+                            weekday: ["integerValue": "\(updatedValue)"]
+                        ]
+                    ]
+                    
+                    // Serialize payload to JSON
+                    guard let jsonData = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
+                        print("Error encoding JSON")
+                        return
+                    }
+                    
+                    // Configure the request
+                    var request = URLRequest(url: updateUrl)
+                    request.httpMethod = "PATCH"
+                    request.httpBody = jsonData
+                    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+                    // Perform the update request
+                    URLSession.shared.dataTask(with: request) { data, response, error in
+                        if let error = error {
+                            print("Error updating weekday counter: \(error.localizedDescription)")
+                        } else {
+                            print("Weekday counter updated successfully for \(weekday) with new value: \(updatedValue)")
+                        }
+                    }.resume()
+                    
+                } else {
+                    print("Error parsing current counter value")
+                }
+            } catch {
+                print("Error parsing JSON: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+    
     // MARK: - Validation Functions
     private func validateMobileNumber() -> Bool {
         if mobileNumber.isEmpty {
