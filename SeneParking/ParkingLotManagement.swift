@@ -90,6 +90,17 @@ struct ParkingLotManagementView: View {
                         }
                         
                         Spacer()
+                        
+                        // Sign Out Button
+                        NavigationLink(destination: SignInView()) {
+                            Text("Sign Out")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.white)
+                                .foregroundColor(.red)
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal, 20)
                     }
                     .padding()
                 }
@@ -99,6 +110,10 @@ struct ParkingLotManagementView: View {
             }
             .navigationBarHidden(true)
         }
+    }
+    
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
     // Fetch Parking Lot Data
@@ -153,6 +168,8 @@ struct ParkingLotManagementView: View {
         guard let data = parkingLotData else { return }
         isSaving = true
         errorMessage = nil
+        
+        dismissKeyboard()
         
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots/\(parkingLotID)?updateMask.fieldPaths=availableSpots&updateMask.fieldPaths=available_ev_spots") else {
             errorMessage = "Invalid URL"
