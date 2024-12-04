@@ -13,6 +13,8 @@ struct RegisterParkingLotView: View {
     @State private var isShowingAlert: Bool = false
     @State private var registrationSuccess: Bool = false
     
+    @Environment(\.dismiss) var dismiss
+    
     // Error message states
     @State private var parkingLotNameError: String? = nil
     @State private var farePerDayError: String? = nil
@@ -22,13 +24,15 @@ struct RegisterParkingLotView: View {
     @State private var longitudeError: String? = nil
     @State private var latitudeError: String? = nil
     @State private var availableEVSpotsError: String? = nil
-
+    
+    @State private var navigateToOwner = true
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(red: 246/255, green: 74/255, blue: 85/255)
                     .ignoresSafeArea()
-
+                
                 ScrollView {
                     VStack {
                         Spacer()
@@ -137,6 +141,19 @@ struct RegisterParkingLotView: View {
                 EmptyView()
             }
         )
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()  // Use dismiss to navigate back
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.black)
+                        .imageScale(.large)
+                        .padding()
+                }
+            }
+        }
+        .navigationBarBackButtonHidden(true)
         .onAppear(perform: clearFields)
     }
     
@@ -239,13 +256,13 @@ struct RegisterParkingLotView: View {
     
     private func validateAndRegister() {
         let isValid = validateParkingLotName() &&
-                     validateFarePerDay() &&
-                     validateOpenTime() &&
-                     validateCloseTime() &&
-                     validateAvailableSpots() &&
-                     validateLongitude() &&
-                     validateLatitude() &&
-                     validateEVSpots()
+        validateFarePerDay() &&
+        validateOpenTime() &&
+        validateCloseTime() &&
+        validateAvailableSpots() &&
+        validateLongitude() &&
+        validateLatitude() &&
+        validateEVSpots()
         
         if isValid {
             registerParkingLot()
@@ -258,7 +275,7 @@ struct RegisterParkingLotView: View {
             isShowingAlert = true
             return
         }
-
+        
         let body: [String: Any] = [
             "fields": [
                 "name": ["stringValue": parkingLotName],
@@ -276,7 +293,7 @@ struct RegisterParkingLotView: View {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {

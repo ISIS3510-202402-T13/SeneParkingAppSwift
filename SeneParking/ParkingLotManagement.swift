@@ -8,92 +8,133 @@ struct ParkingLotManagementView: View {
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
     @State private var isSaving = false
+    @State private var showSaveConfirmation = false // Added state for save confirmation message
     
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(red: 246/255, green: 74/255, blue: 85/255)
                     .ignoresSafeArea()
-                
-                if isLoading {
-                    ProgressView("Loading...")
-                        .foregroundColor(.white)
-                } else if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                } else if let data = parkingLotData {
-                    VStack(spacing: 20) {
-                        Text("Manage Parking Lot")
-                            .font(.largeTitle)
+                ScrollView {
+                    
+                    if isLoading {
+                        ProgressView("Loading...")
                             .foregroundColor(.white)
-                            .fontWeight(.bold)
-                        
-                        Group {
-                            Text("Name: \(data.name)")
-                            Text("Location: \(data.latitude), \(data.longitude)")
-                            Text("Open Time: \(data.openTime)")
-                            Text("Close Time: \(data.closeTime)")
-                            Text("Fare Per Day: $\(data.farePerDay)")
-                        }
-                        .foregroundColor(.white)
-                        
-                        Spacer()
-                        
-                        // Modify Available Spots
-                        HStack {
-                            Text("Available Spots:")
+                    } else if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                    } else if let data = parkingLotData {
+                        VStack(spacing: 20) {
+                            Text("Manage Parking Lot")
+                                .font(.largeTitle)
                                 .foregroundColor(.white)
-                            TextField("Available Spots", value: $availableSpots, formatter: NumberFormatter())
-                                .keyboardType(.numberPad)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .frame(width: 100)
-                        }
-                        
-                        // Modify EV Spots
-                        HStack {
-                            Text("EV Spots:")
-                                .foregroundColor(.white)
-                            TextField("Available EV Spots", value: $availableEVSpots, formatter: NumberFormatter())
-                                .keyboardType(.numberPad)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .frame(width: 100)
-                        }
-                        
-                        Spacer()
-                        
-                        // Save Changes Button
-                        Button(action: saveChanges) {
-                            if isSaving {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .frame(height: 20)
-                            } else {
-                                Text("Save Changes")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.blue)
+                                .fontWeight(.bold)
+                                .padding(.bottom, 10)
+                            
+                            Group {
+                                infoRow(label: "Name:", value: data.name)
+                                infoRow(label: "Location:", value: "\(data.latitude), \(data.longitude)")
+                                infoRow(label: "Open Time:", value: data.openTime)
+                                infoRow(label: "Close Time:", value: data.closeTime)
+                                infoRow(label: "Fare Per Day:", value: "$\(data.farePerDay)")
+                            }
+                            
+                            Spacer()
+                            
+                            // Modify Available Spots
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Available Spots")
                                     .foregroundColor(.white)
+                                TextField("Available Spots", value: $availableSpots, formatter: NumberFormatter())
+                                    .keyboardType(.numberPad)
+                                    .padding()
+                                    .background(Color.white)
                                     .cornerRadius(10)
                             }
+                            
+                            // Modify EV Spots
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Available EV Spots")
+                                    .foregroundColor(.white)
+                                TextField("Available EV Spots", value: $availableEVSpots, formatter: NumberFormatter())
+                                    .keyboardType(.numberPad)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                            }
+                            
+                            Spacer()
+                            
+                            // Save Changes Button
+                            Button(action: saveChanges) {
+                                if isSaving {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                } else {
+                                    Text("Save Changes")
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.blue)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(10)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            
+                            // Save Confirmation Message
+                            if showSaveConfirmation {
+                                Text("Changes saved successfully!")
+                                    .foregroundColor(.green)
+                                    .padding(.top, 10)
+                            }
+                            
+                            Spacer()
+                            
+                            // Sign Out Button
+                            NavigationLink(destination: SignInView()) {
+                                Text("Sign Out")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.white)
+                                    .foregroundColor(.red)
+                                    .cornerRadius(10)
+                            }
+                            .padding(.horizontal, 20)
                         }
-                        .padding(.horizontal, 20)
-                        
-                        Spacer()
+                        .padding()
                     }
-                    .padding()
+                    VStack {
+                        NavigationLink(destination: LicensePlateRecognitionView()) {
+                            Image(systemName: "camera.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                                .shadow(radius: 5)
+                        }
+                        .padding(.top, 30)
+                        .padding(.bottom, 5)
+                        
+                        Text("Use camera to recognize license plates")
+                            .font(.footnote)
+                            .foregroundColor(.white)
+                    }
                 }
+                .onAppear {
+                    fetchParkingLotData()
+                }
+                .navigationBarHidden(true)
             }
-            .onAppear {
-                fetchParkingLotData()
-            }
-            .navigationBarHidden(true)
         }
+    }
+    
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
     // Fetch Parking Lot Data
@@ -120,7 +161,7 @@ struct ParkingLotManagementView: View {
                     errorMessage = "No data received"
                     return
                 }
-            
+                
                 do {
                     let decodedData = try JSONDecoder().decode(FirestoreDocument.self, from: data)
                     let fields = decodedData.fields
@@ -148,6 +189,8 @@ struct ParkingLotManagementView: View {
         guard let data = parkingLotData else { return }
         isSaving = true
         errorMessage = nil
+        
+        dismissKeyboard()
         
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots/\(parkingLotID)?updateMask.fieldPaths=availableSpots&updateMask.fieldPaths=available_ev_spots") else {
             errorMessage = "Invalid URL"
@@ -181,9 +224,27 @@ struct ParkingLotManagementView: View {
                     return
                 }
                 
-                errorMessage = "Changes saved successfully!"
+                showSaveConfirmation = true
+                
+                // Hide confirmation after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showSaveConfirmation = false
+                }
             }
         }.resume()
+    }
+    
+    // Helper for info rows
+    private func infoRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.white)
+                .fontWeight(.bold)
+            Spacer()
+            Text(value)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal)
     }
 }
 

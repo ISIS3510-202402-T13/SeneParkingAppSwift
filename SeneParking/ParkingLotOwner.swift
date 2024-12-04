@@ -4,8 +4,11 @@ struct ParkingLotOwner: View {
     @State private var parkingLotID: String = ""
     @State private var navigateToManagement = false
     @State private var navigateToRegistration = false
+    @State private var errorMessage: String? = nil  // Error message state
     
     @AppStorage("parkingID") private var storedID: String = ""
+    
+    @Environment(\.dismiss) var dismiss  // Dismiss environment to return to the previous view
     
     var body: some View {
         NavigationStack {
@@ -30,11 +33,15 @@ struct ParkingLotOwner: View {
                         .foregroundColor(.black)
                         .padding(.horizontal, 20)
                     
+                    if let errorMessage = errorMessage {  // Display error message if not nil
+                        Text(errorMessage)
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    
                     // Navigate to Parking Lot Management
-                    Button(action: {
-                        navigateToManagement = true
-                        storedID = parkingLotID
-                    }) {
+                    NavigationLink(destination: ParkingLotManagementView(parkingLotID: parkingLotID)) {
                         Text("Go to Parking Lot Management")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -45,9 +52,7 @@ struct ParkingLotOwner: View {
                     .padding(.horizontal, 20)
                     
                     // Navigate to Parking Lot Registration
-                    Button(action: {
-                        navigateToRegistration = true
-                    }) {
+                    NavigationLink(destination: RegisterParkingLotView()) {
                         Text("Register Parking Lot")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -60,19 +65,59 @@ struct ParkingLotOwner: View {
                     Spacer()
                 }
             }
-            .navigationDestination(isPresented: $navigateToManagement) {
-                ParkingLotManagementView(parkingLotID: parkingLotID)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .imageScale(.large)
+                            .padding()
+                    }
+                }
             }
-            .navigationDestination(isPresented: $navigateToRegistration) {
-                RegisterParkingLotView()
-            }
-            .navigationBarHidden(true)
         }
         .onAppear() {
             if !storedID.isEmpty {
                 parkingLotID = storedID
             }
         }
+    }
+    
+    // Function to validate the Parking Lot ID
+    private func validateParkingLotID() {
+        guard !parkingLotID.isEmpty else {
+            errorMessage = "Please enter a valid Parking Lot ID."
+            return
+        }
+        
+        let urlString = "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots/\(parkingLotID)"
+        guard let url = URL(string: urlString) else {
+            errorMessage = "Invalid URL format."
+            return
+        }
+        
+        // Perform the fetch request
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    errorMessage = "Error: \(error.localizedDescription)"
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    errorMessage = "Parking Lot ID not found. Please try again."
+                    return
+                }
+                
+                // Success: Proceed to navigation
+                errorMessage = nil
+                storedID = parkingLotID  // Save the valid ID
+                navigateToManagement = true
+            }
+        }.resume()
     }
 }
 
