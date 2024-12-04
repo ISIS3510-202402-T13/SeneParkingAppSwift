@@ -41,9 +41,7 @@ struct ParkingLotOwner: View {
                     }
                     
                     // Navigate to Parking Lot Management
-                    Button(action: {
-                        validateParkingLotID()
-                    }) {
+                    NavigationLink(destination: ParkingLotManagementView(parkingLotID: parkingLotID)) {
                         Text("Go to Parking Lot Management")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -54,9 +52,7 @@ struct ParkingLotOwner: View {
                     .padding(.horizontal, 20)
                     
                     // Navigate to Parking Lot Registration
-                    Button(action: {
-                        navigateToRegistration = true
-                    }) {
+                    NavigationLink(destination: RegisterParkingLotView()) {
                         Text("Register Parking Lot")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -68,12 +64,6 @@ struct ParkingLotOwner: View {
                     
                     Spacer()
                 }
-            }
-            .navigationDestination(isPresented: $navigateToManagement) {
-                ParkingLotManagementView(parkingLotID: parkingLotID)
-            }
-            .navigationDestination(isPresented: $navigateToRegistration) {
-                RegisterParkingLotView()
             }
             .navigationBarBackButtonHidden(true)
             .toolbar {

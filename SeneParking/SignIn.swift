@@ -108,10 +108,7 @@ struct SignInView: View {
                                 )
                         }
                         
-                        Button(action: {
-                            // showLicensePlateRecognition = true
-                            showRegisterParkingLot = true
-                        }) {
+                        NavigationLink(destination: ParkingLotOwner()) {
                             Text("I'm a Parking Lot Owner")
                                 .font(.headline)
                                 .foregroundColor(.white)
@@ -137,12 +134,10 @@ struct SignInView: View {
             .navigationDestination(isPresented: $login) {
                 MainMapView()
             }
-            .navigationDestination(isPresented: $showRegisterParkingLot) {
-                ParkingLotOwner()
-            }
             .navigationBarHidden(true)
         }
         .onAppear {
+            showRegisterParkingLot = false
             // Pre-fill the mobile number if it is stored in UserDefaults (session management)
             if !storedMobileNumber.isEmpty {
                 mobileNumber = storedMobileNumber
