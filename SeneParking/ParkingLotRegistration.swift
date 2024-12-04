@@ -104,25 +104,6 @@ struct RegisterParkingLotView: View {
                         
                         Spacer()
                         
-                        VStack {
-                            NavigationLink(destination: LicensePlateRecognitionView()) {
-                                Image(systemName: "camera.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(Color.blue)
-                                    .clipShape(Circle())
-                                    .shadow(radius: 5)
-                            }
-                            .padding(.top, 30)
-                            .padding(.bottom, 5)
-                            
-                            Text("Use camera to recognize license plates")
-                                .font(.footnote)
-                                .foregroundColor(.white)
-                        }
                         .padding(.bottom, 30)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

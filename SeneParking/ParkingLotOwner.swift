@@ -27,6 +27,7 @@ struct ParkingLotOwner: View {
                     
                     // Parking Lot ID Field
                     TextField("Enter Parking Lot ID", text: $parkingLotID)
+                        .autocapitalization(.none)
                         .padding()
                         .background(Color.white)
                         .cornerRadius(10)
