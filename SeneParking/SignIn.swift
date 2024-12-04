@@ -148,62 +148,70 @@ struct SignInView: View {
         }
     }
     
-    func incrementWeekdayCounter() {
+    func incrementWeekdayCounter(isFirstPosition: Bool) {
         // Get the current day of the week in English and capitalize it
         let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "en_US") // Ensure English locale
-        dateFormatter.dateFormat = "EEEE" // Full weekday name
-        
-        let weekday = dateFormatter.string(from: Date()) // Capitalized weekday name
+        dateFormatter.locale = Locale(identifier: "en_US")
+        dateFormatter.dateFormat = "EEEE"
+        let weekday = dateFormatter.string(from: Date()) // Current day of the week
 
-        // Define the URL to fetch the document
-        guard let fetchUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SzkDDfUxEKfSFVblmq9O") else {
+        // URL for fetching the current data from Firestore
+        guard let fetchUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SignInAnalytics") else {
             print("Invalid URL for Firebase fetch")
             return
         }
-        
-        // Fetch the current value
+
+        // Fetch the current values for the day
         URLSession.shared.dataTask(with: fetchUrl) { data, response, error in
             if let error = error {
-                print("Error fetching current counter: \(error.localizedDescription)")
+                print("Error fetching data: \(error.localizedDescription)")
                 return
             }
-            
+
             guard let data = data else {
                 print("No data received")
                 return
             }
-            
+
             do {
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let fields = json["fields"] as? [String: Any],
                    let weekdayField = fields[weekday] as? [String: Any],
-                   let currentValueString = weekdayField["integerValue"] as? String,
-                   let currentValue = Int(currentValueString) {
-                    
-                    // Increment the current value by 1
-                    let updatedValue = currentValue + 1
-                    
-                    // Define the URL with document path for updating
-                    guard let updateUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SzkDDfUxEKfSFVblmq9O?updateMask.fieldPaths=\(weekday)") else {
+                   let arrayValues = weekdayField["arrayValue"] as? [String: Any],
+                   let values = arrayValues["values"] as? [[String: Any]],
+                   let firstCounterString = values[0]["integerValue"] as? String,
+                   let secondCounterString = values[1]["integerValue"] as? String,
+                   let firstCounter = Int(firstCounterString),
+                   let secondCounter = Int(secondCounterString) {
+
+                    // Determine which counter to update
+                    let updatedFirstCounter = isFirstPosition ? firstCounter + 1 : firstCounter
+                    let updatedSecondCounter = !isFirstPosition ? secondCounter + 1 : secondCounter
+
+                    // Prepare the payload for the update
+                    let payload: [String: Any] = [
+                        "fields": [
+                            weekday: [
+                                "arrayValue": [
+                                    "values": [
+                                        ["integerValue": "\(updatedFirstCounter)"],
+                                        ["integerValue": "\(updatedSecondCounter)"]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+
+                    // URL for updating the document
+                    guard let updateUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SignInAnalytics?updateMask.fieldPaths=\(weekday)") else {
                         print("Invalid URL for Firebase update")
                         return
                     }
 
-                    // Define the request payload with updated value
-                    let payload: [String: Any] = [
-                        "fields": [
-                            weekday: ["integerValue": "\(updatedValue)"]
-                        ]
-                    ]
-                    
-                    // Serialize payload to JSON
-                    guard let jsonData = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
-                        print("Error encoding JSON")
-                        return
-                    }
-                    
-                    // Configure the request
+                    // Serialize the payload to JSON
+                    let jsonData = try JSONSerialization.data(withJSONObject: payload, options: [])
+
+                    // Configure the PATCH request
                     var request = URLRequest(url: updateUrl)
                     request.httpMethod = "PATCH"
                     request.httpBody = jsonData
@@ -214,18 +222,18 @@ struct SignInView: View {
                         if let error = error {
                             print("Error updating weekday counter: \(error.localizedDescription)")
                         } else {
-                            print("Weekday counter updated successfully for \(weekday) with new value: \(updatedValue)")
+                            print("Weekday counter updated successfully for \(weekday)")
                         }
                     }.resume()
-                    
                 } else {
-                    print("Error parsing current counter value")
+                    print("Error parsing current counters")
                 }
             } catch {
                 print("Error parsing JSON: \(error.localizedDescription)")
             }
         }.resume()
     }
+
     
     // MARK: - Validation Functions
     private func validateMobileNumber() -> Bool {
@@ -304,6 +312,7 @@ struct SignInView: View {
                                let passwordField = (fields["password"] as? [String: Any])?["stringValue"] as? String {
                                 if mobileNumberField == mobileNumber && passwordField == password {
                                     userFound = true
+                                    incrementWeekdayCounter(isFirstPosition: userFound)
                                     login = true // User authenticated, navigate to the main app view
                                     
                                     // Store mobile number in UserDefaults (session management)
@@ -316,6 +325,7 @@ struct SignInView: View {
                         
                         if !userFound {
                             loginErrorMessage = "Invalid mobile number or password."
+                            incrementWeekdayCounter(isFirstPosition: userFound)
                         }
                     } else {
                         loginErrorMessage = "No users found."
