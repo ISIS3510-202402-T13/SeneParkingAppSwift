@@ -3,8 +3,9 @@ import SwiftUI
 struct ParkingLotOwner: View {
     @State private var parkingLotID: String = ""
     @State private var navigateToManagement = false
-    @State private var errorMessage: String? = nil  // Error message state
+    @State private var errorMessage: String? = nil
     
+    // Caching strategy: The last used parking lot ID is stored in UserDefaults, persists across app launches
     @AppStorage("parkingID") private var storedID: String = ""
     
     @Environment(\.dismiss) var dismiss  // Dismiss environment to return to the previous view

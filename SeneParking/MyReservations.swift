@@ -52,6 +52,7 @@ class ReservationViewModel: ObservableObject {
             return
         }
         
+        // Async/Await with DispatchQueue.main used for UI updates
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 self?.isLoading = false
@@ -104,7 +105,7 @@ class ReservationViewModel: ObservableObject {
             return
         }
 
-        // Make the request
+        // Async/Await with DispatchQueue.main used for UI updates
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if let error = error {

@@ -36,13 +36,16 @@ struct SavedCard: Identifiable, Codable {
 }
 
 class PaymentDataManager {
+    // Singleton pattern for torage management (only one instance managing storage operations)
     static let shared = PaymentDataManager()
     private let userDefaults = UserDefaults.standard
     
+    // UserDefaults as storage medium: Define unique keys for different data types for persistent data storage
+    // Data is stored on the device's file system in a plist file
     private let paymentHistoryKey = "paymentHistory"
     private let savedCardsKey = "savedCards"
     
-    // Save a new payment to history
+    // Save a new payment to history (saved locally)
     func savePaymentToHistory(parkingLot: String, amount: Double, lastFourDigits: String) {
         var history = getPaymentHistory()
         let payment = PaymentHistory(
