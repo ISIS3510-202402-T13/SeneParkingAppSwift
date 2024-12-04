@@ -129,9 +129,9 @@
 		224305CF2CAB8A370062FC51 /* SeneParking */ = {
 			isa = PBXGroup;
 			children = (
+				D441141F2CC211BA00A5C702 /* Info.plist */,
 				D3BDA3102CFFEBDA00C4BA62 /* CreditCardForm.swift */,
 				D3BDA30E2CFFEBB500C4BA62 /* MyReservations.swift */,
-				D441141F2CC211BA00A5C702 /* Info.plist */,
 				224305D02CAB8A370062FC51 /* SeneParkingApp.swift */,
 				D44B86F52CE7935000F1B12F /* OfflineDataManager.swift */,
 				D44B86F32CE7930C00F1B12F /* NetworkMonitor.swift */,
