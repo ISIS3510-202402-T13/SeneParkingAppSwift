@@ -14,6 +14,7 @@ struct ParkingLotDetailView: View {
     @State private var selectedStartTime = Date()
     @State private var selectedDuration = 1
     @State private var availableSpots: Int?
+    @State private var reservationErrorMessage: String?
     
     @StateObject private var notificationManager = ParkingNotificationManager.shared
     @StateObject private var reservationManager = ParkingReservationManager()
@@ -24,7 +25,13 @@ struct ParkingLotDetailView: View {
     }
     
     private var canMakeReservation: Bool {
-        networkMonitor.isConnected && parkingLot.availableSpots > 0 && !hasReserved
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: selectedStartTime)
+        return networkMonitor.isConnected &&
+               parkingLot.availableSpots > 0 &&
+               !hasReserved &&
+               weekday != 1 && // Prevent reservations on Sunday
+               reservationErrorMessage == nil
     }
     
     private var reservationButtonText: String {
@@ -83,9 +90,15 @@ struct ParkingLotDetailView: View {
                     VStack(alignment: .leading) {
                         Text("Available Spots at Selected Time")
                             .font(.headline)
-                        Text("\(spots) spots available")
-                            .font(.title2)
-                            .foregroundColor(spots > 0 ? .green : .red)
+                        if let errorMessage = reservationErrorMessage {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                                .font(.subheadline)
+                        } else {
+                            Text("\(spots) spots available")
+                                .font(.title2)
+                                .foregroundColor(spots > 0 ? .green : .red)
+                        }
                             
                         Text("Selected time: \(formatDate(selectedStartTime))")
                             .font(.subheadline)
@@ -97,7 +110,7 @@ struct ParkingLotDetailView: View {
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(10)
                     
-                    if spots > 0 && !hasReserved {
+                    if spots > 0 && !hasReserved && reservationErrorMessage == nil {
                         reservationSection
                     }
                 }
@@ -137,10 +150,15 @@ struct ParkingLotDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingTimeSelection) {
             NavigationView {
-                TimeSelectionView(selectedStartTime: $selectedStartTime, selectedDuration: $selectedDuration)
+                    TimeSelectionView(
+                        selectedStartTime: $selectedStartTime,
+                        selectedDuration: $selectedDuration,
+                        parkingLot: parkingLot
+                    )
                     .navigationTitle("Select Time")
                     .navigationBarItems(trailing: Button("Done") {
                         showingTimeSelection = false
+                        reservationErrorMessage = nil
                         checkAvailability()
                     })
             }
@@ -199,33 +217,76 @@ struct ParkingLotDetailView: View {
             return
         }
         
-        let endTime = Calendar.current.date(byAdding: .hour, value: selectedDuration, to: selectedStartTime)!
+        reservationErrorMessage = nil
         
-        let queryParams = [
-            "structuredQuery": [
-                "where": [
-                    "compositeFilter": [
-                        "op": "AND",
-                        "filters": [
-                            [
-                                "fieldFilter": [
-                                    "field": ["fieldPath": "parkingLotId"],
-                                    "op": "EQUAL",
-                                    "value": ["stringValue": parkingLot.id]
-                                ]
-                            ],
-                            [
-                                "fieldFilter": [
-                                    "field": ["fieldPath": "startTime"],
-                                    "op": "LESS_THAN",
-                                    "value": ["timestampValue": ISO8601DateFormatter().string(from: endTime)]
-                                ]
-                            ],
-                            [
-                                "fieldFilter": [
-                                    "field": ["fieldPath": "endTime"],
-                                    "op": "GREATER_THAN",
-                                    "value": ["timestampValue": ISO8601DateFormatter().string(from: selectedStartTime)]
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: selectedStartTime)
+        
+        if weekday == 1 { // Sunday = 1 in Calendar
+            self.availableSpots = 0
+            self.reservationErrorMessage = "Reservations are not available on Sundays"
+            return
+        }
+        
+        let dateFormatter = DateFormatter()
+               dateFormatter.dateFormat = "h:mma"
+               
+               // Get start time of reservation
+               let startTimeString = dateFormatter.string(from: selectedStartTime).lowercased()
+               
+               // Get end time of reservation
+               let endTime = Calendar.current.date(byAdding: .hour, value: selectedDuration, to: selectedStartTime)!
+               let endTimeString = dateFormatter.string(from: endTime).lowercased()
+               
+               // Parse parking lot operating hours
+               guard let parkingOpenTime = dateFormatter.date(from: parkingLot.openTime.lowercased()),
+                     let parkingCloseTime = dateFormatter.date(from: parkingLot.closeTime.lowercased()),
+                     let reservationStartTime = dateFormatter.date(from: startTimeString),
+                     let reservationEndTime = dateFormatter.date(from: endTimeString) else {
+                   self.reservationErrorMessage = "Error validating parking hours"
+                   self.availableSpots = 0
+                   return
+               }
+               
+               // Compare times
+               if reservationStartTime < parkingOpenTime {
+                   self.availableSpots = 0
+                   self.reservationErrorMessage = "Reservation cannot start before parking lot opens at \(parkingLot.openTime)"
+                   return
+               }
+        
+                if reservationStartTime > parkingCloseTime {
+                    self.availableSpots = 0
+                    self.reservationErrorMessage = "Reservation cannot start after parking lot closes at \(parkingLot.closeTime)"
+                    return
+                }
+               
+               // If we get here, the times are valid, continue with existing availability check
+               let queryParams = [
+                   "structuredQuery": [
+                       "where": [
+                           "compositeFilter": [
+                               "op": "AND",
+                               "filters": [
+                                   [
+                                       "fieldFilter": [
+                                           "field": ["fieldPath": "parkingLotId"],
+                                           "op": "EQUAL",
+                                           "value": ["stringValue": parkingLot.id]
+                                       ]
+                                   ],
+                                   [
+                                       "fieldFilter": [
+                                           "field": ["fieldPath": "startTime"],
+                                           "op": "LESS_THAN",
+                                           "value": ["timestampValue": ISO8601DateFormatter().string(from: endTime)]
+                                       ]
+                                   ],
+                                   [
+                                       "fieldFilter": [
+                                           "field": ["fieldPath": "endTime"],
+                                           "op": "GREATER_THAN",
+                                           "value": ["timestampValue": ISO8601DateFormatter().string(from: selectedStartTime)]
                                 ]
                             ]
                         ]

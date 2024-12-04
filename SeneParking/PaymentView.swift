@@ -113,7 +113,7 @@ struct PaymentView: View {
         paymentError = nil
 
         let workItem = DispatchWorkItem {
-            let success = Double.random(in: 0...1) < 0.3
+            let success = Double.random(in: 0...1) < 0.9
             
             DispatchQueue.main.async {
                 self.isProcessing = false
