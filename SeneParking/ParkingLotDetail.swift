@@ -3,6 +3,11 @@ import MapKit
 import UserNotifications
 import Combine
 
+// Shared image cache
+class ImageCache {
+    static let shared = NSCache<NSString, UIImage>()
+}
+
 struct ParkingLotDetailView: View {
     @State var parkingLot: ParkingLot
     @State private var notificationEnabled = false
@@ -47,15 +52,28 @@ struct ParkingLotDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Map(coordinateRegion: .constant(MKCoordinateRegion(
-                    center: parkingLot.coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-                )), annotationItems: [parkingLot]) { lot in
-                    MapMarker(coordinate: lot.coordinate, tint: .red)
+                AsyncImage(url: URL(string: "https://firebasestorage.googleapis.com/v0/b/seneparking-f457b.firebasestorage.app/o/imagen2.jpg?alt=media&token=0237c1bf-d3f7-4727-b5c8-c4d8201e3fcc")) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()  // Shows a loading indicator
+                            .frame(height: 200)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 200)
+                            .clipped()
+                            .cornerRadius(10)
+                    case .failure:
+                        Text("Failed to load image")
+                            .frame(height: 200)
+                            .foregroundColor(.gray)
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
-                .frame(height: 200)
-                .cornerRadius(10)
                 
+                // Existing Buttons and Other Components
                 Button(action: {
                     let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: parkingLot.coordinate))
                     mapItem.name = parkingLot.name
