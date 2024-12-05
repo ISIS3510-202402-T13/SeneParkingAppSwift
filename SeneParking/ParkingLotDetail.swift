@@ -33,10 +33,10 @@ struct ParkingLotDetailView: View {
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: selectedStartTime)
         return networkMonitor.isConnected &&
-               parkingLot.availableSpots > 0 &&
-               !hasReserved &&
-               weekday != 1 && // Prevent reservations on Sunday
-               reservationErrorMessage == nil
+        parkingLot.availableSpots > 0 &&
+        !hasReserved &&
+        weekday != 1 && // Prevent reservations on Sunday
+        reservationErrorMessage == nil
     }
     
     private var reservationButtonText: String {
@@ -52,26 +52,11 @@ struct ParkingLotDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                AsyncImage(url: URL(string: "https://firebasestorage.googleapis.com/v0/b/seneparking-f457b.firebasestorage.app/o/imagen2.jpg?alt=media&token=0237c1bf-d3f7-4727-b5c8-c4d8201e3fcc")) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()  // Shows a loading indicator
-                            .frame(height: 200)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 200)
-                            .clipped()
-                            .cornerRadius(10)
-                    case .failure:
-                        Text("Failed to load image")
-                            .frame(height: 200)
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
+                // Cached AsyncImage implementation
+                CachedAsyncImage(urlString: "https://firebasestorage.googleapis.com/v0/b/seneparking-f457b.firebasestorage.app/o/imagen2.jpg?alt=media&token=0237c1bf-d3f7-4727-b5c8-c4d8201e3fcc")
+                    .frame(height: 200)
+                    .clipped()
+                    .cornerRadius(10)
                 
                 // Existing Buttons and Other Components
                 Button(action: {
@@ -118,7 +103,7 @@ struct ParkingLotDetailView: View {
                                 .font(.title2)
                                 .foregroundColor(spots > 0 ? .green : .red)
                         }
-                            
+                        
                         Text("Selected time: \(formatDate(selectedStartTime))")
                             .font(.subheadline)
                         Text("Duration: \(selectedDuration) hours")
@@ -169,17 +154,17 @@ struct ParkingLotDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingTimeSelection) {
             NavigationView {
-                    TimeSelectionView(
-                        selectedStartTime: $selectedStartTime,
-                        selectedDuration: $selectedDuration,
-                        parkingLot: parkingLot
-                    )
-                    .navigationTitle("Select Time")
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingTimeSelection = false
-                        reservationErrorMessage = nil
-                        checkAvailability()
-                    })
+                TimeSelectionView(
+                    selectedStartTime: $selectedStartTime,
+                    selectedDuration: $selectedDuration,
+                    parkingLot: parkingLot
+                )
+                .navigationTitle("Select Time")
+                .navigationBarItems(trailing: Button("Done") {
+                    showingTimeSelection = false
+                    reservationErrorMessage = nil
+                    checkAvailability()
+                })
             }
         }
         .navigationDestination(isPresented: $showPaymentView) {
@@ -187,6 +172,47 @@ struct ParkingLotDetailView: View {
                 parkingLot: parkingLot,
                 reservationDuration: TimeInterval(selectedDuration * 3600)
             )
+        }
+    }
+    
+    struct CachedAsyncImage: View {
+        let urlString: String
+        @State private var image: UIImage?
+
+        var body: some View {
+            Group {
+                if let image = image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    ProgressView()  // Loading indicator
+                        .onAppear {
+                            loadImage()
+                        }
+                }
+            }
+        }
+
+        private func loadImage() {
+            let cacheKey = NSString(string: urlString)
+            
+            // Check if the image is already cached
+            if let cachedImage = ImageCache.shared.object(forKey: cacheKey) {
+                self.image = cachedImage
+                return
+            }
+            
+            // Download and cache the image
+            guard let url = URL(string: urlString) else { return }
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                if let data = data, let downloadedImage = UIImage(data: data) {
+                    ImageCache.shared.setObject(downloadedImage, forKey: cacheKey)
+                    DispatchQueue.main.async {
+                        self.image = downloadedImage
+                    }
+                }
+            }.resume()
         }
     }
     
@@ -220,8 +246,8 @@ struct ParkingLotDetailView: View {
                     .padding()
                     .background(
                         canMakeReservation && !reservationManager.isReserving
-                            ? Color.blue
-                            : Color.gray
+                        ? Color.blue
+                        : Color.gray
                     )
                     .foregroundColor(.white)
                     .cornerRadius(10)
@@ -248,64 +274,64 @@ struct ParkingLotDetailView: View {
         }
         
         let dateFormatter = DateFormatter()
-               dateFormatter.dateFormat = "h:mma"
-               
-               // Get start time of reservation
-               let startTimeString = dateFormatter.string(from: selectedStartTime).lowercased()
-               
-               // Get end time of reservation
-               let endTime = Calendar.current.date(byAdding: .hour, value: selectedDuration, to: selectedStartTime)!
-               let endTimeString = dateFormatter.string(from: endTime).lowercased()
-               
-               // Parse parking lot operating hours
-               guard let parkingOpenTime = dateFormatter.date(from: parkingLot.openTime.lowercased()),
-                     let parkingCloseTime = dateFormatter.date(from: parkingLot.closeTime.lowercased()),
-                     let reservationStartTime = dateFormatter.date(from: startTimeString),
-                     let reservationEndTime = dateFormatter.date(from: endTimeString) else {
-                   self.reservationErrorMessage = "Error validating parking hours"
-                   self.availableSpots = 0
-                   return
-               }
-               
-               // Compare times
-               if reservationStartTime < parkingOpenTime {
-                   self.availableSpots = 0
-                   self.reservationErrorMessage = "Reservation cannot start before parking lot opens at \(parkingLot.openTime)"
-                   return
-               }
+        dateFormatter.dateFormat = "h:mma"
         
-                if reservationStartTime > parkingCloseTime {
-                    self.availableSpots = 0
-                    self.reservationErrorMessage = "Reservation cannot start after parking lot closes at \(parkingLot.closeTime)"
-                    return
-                }
-               
-               // If we get here, the times are valid, continue with existing availability check
-               let queryParams = [
-                   "structuredQuery": [
-                       "where": [
-                           "compositeFilter": [
-                               "op": "AND",
-                               "filters": [
-                                   [
-                                       "fieldFilter": [
-                                           "field": ["fieldPath": "parkingLotId"],
-                                           "op": "EQUAL",
-                                           "value": ["stringValue": parkingLot.id]
-                                       ]
-                                   ],
-                                   [
-                                       "fieldFilter": [
-                                           "field": ["fieldPath": "startTime"],
-                                           "op": "LESS_THAN",
-                                           "value": ["timestampValue": ISO8601DateFormatter().string(from: endTime)]
-                                       ]
-                                   ],
-                                   [
-                                       "fieldFilter": [
-                                           "field": ["fieldPath": "endTime"],
-                                           "op": "GREATER_THAN",
-                                           "value": ["timestampValue": ISO8601DateFormatter().string(from: selectedStartTime)]
+        // Get start time of reservation
+        let startTimeString = dateFormatter.string(from: selectedStartTime).lowercased()
+        
+        // Get end time of reservation
+        let endTime = Calendar.current.date(byAdding: .hour, value: selectedDuration, to: selectedStartTime)!
+        let endTimeString = dateFormatter.string(from: endTime).lowercased()
+        
+        // Parse parking lot operating hours
+        guard let parkingOpenTime = dateFormatter.date(from: parkingLot.openTime.lowercased()),
+              let parkingCloseTime = dateFormatter.date(from: parkingLot.closeTime.lowercased()),
+              let reservationStartTime = dateFormatter.date(from: startTimeString),
+              let reservationEndTime = dateFormatter.date(from: endTimeString) else {
+            self.reservationErrorMessage = "Error validating parking hours"
+            self.availableSpots = 0
+            return
+        }
+        
+        // Compare times
+        if reservationStartTime < parkingOpenTime {
+            self.availableSpots = 0
+            self.reservationErrorMessage = "Reservation cannot start before parking lot opens at \(parkingLot.openTime)"
+            return
+        }
+        
+        if reservationStartTime > parkingCloseTime {
+            self.availableSpots = 0
+            self.reservationErrorMessage = "Reservation cannot start after parking lot closes at \(parkingLot.closeTime)"
+            return
+        }
+        
+        // If we get here, the times are valid, continue with existing availability check
+        let queryParams = [
+            "structuredQuery": [
+                "where": [
+                    "compositeFilter": [
+                        "op": "AND",
+                        "filters": [
+                            [
+                                "fieldFilter": [
+                                    "field": ["fieldPath": "parkingLotId"],
+                                    "op": "EQUAL",
+                                    "value": ["stringValue": parkingLot.id]
+                                ]
+                            ],
+                            [
+                                "fieldFilter": [
+                                    "field": ["fieldPath": "startTime"],
+                                    "op": "LESS_THAN",
+                                    "value": ["timestampValue": ISO8601DateFormatter().string(from: endTime)]
+                                ]
+                            ],
+                            [
+                                "fieldFilter": [
+                                    "field": ["fieldPath": "endTime"],
+                                    "op": "GREATER_THAN",
+                                    "value": ["timestampValue": ISO8601DateFormatter().string(from: selectedStartTime)]
                                 ]
                             ]
                         ]
@@ -380,7 +406,7 @@ struct ParkingLotDetailView: View {
         dateFormatter.dateFormat = "EEEE" // Full weekday name
         
         let weekday = dateFormatter.string(from: Date()) // Capitalized weekday name
-
+        
         // Define the URL to fetch the document
         guard let fetchUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/NavigationAnalytics") else {
             print("Invalid URL for Firebase fetch")
@@ -414,7 +440,7 @@ struct ParkingLotDetailView: View {
                         print("Invalid URL for Firebase update")
                         return
                     }
-
+                    
                     // Define the request payload with updated value
                     let payload: [String: Any] = [
                         "fields": [
@@ -433,7 +459,7 @@ struct ParkingLotDetailView: View {
                     request.httpMethod = "PATCH"
                     request.httpBody = jsonData
                     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
+                    
                     // Perform the update request
                     URLSession.shared.dataTask(with: request) { data, response, error in
                         if let error = error {
