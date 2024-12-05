@@ -13,17 +13,20 @@ extension Notification.Name {
 }
 
 class NetworkMonitor: ObservableObject {
-    @Published private(set) var isConnected = true
-    @Published private(set) var lastUpdated: Date?
-    private let monitor = NWPathMonitor()
-    
     static let shared = NetworkMonitor()
+    private let monitor = NWPathMonitor()
+    @Published private(set) var isConnected = true
     
-    init() {
+    private init() {
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
+                let wasConnected = self?.isConnected ?? true
                 self?.isConnected = path.status == .satisfied
-                NotificationCenter.default.post(name: .networkStatusChanged, object: nil)
+                
+                // Only post notification when connection is restored
+                if !wasConnected && path.status == .satisfied {
+                    NotificationCenter.default.post(name: .networkStatusChanged, object: nil)
+                }
             }
         }
         monitor.start(queue: DispatchQueue.global())

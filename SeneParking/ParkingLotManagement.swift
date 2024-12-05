@@ -8,7 +8,9 @@ struct ParkingLotManagementView: View {
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
     @State private var isSaving = false
-    @State private var showSaveConfirmation = false // Added state for save confirmation message
+    @State private var showSaveConfirmation = false
+    @StateObject private var networkMonitor = NetworkMonitor.shared
+    @State private var showOfflineAlert = false
     
     var body: some View {
         NavigationStack {
@@ -16,6 +18,19 @@ struct ParkingLotManagementView: View {
                 Color(red: 246/255, green: 74/255, blue: 85/255)
                     .ignoresSafeArea()
                 ScrollView {
+                    
+                    if !networkMonitor.isConnected {
+                       HStack {
+                           Image(systemName: "wifi.slash")
+                           Text("You are currently offline")
+                           Spacer()
+                       }
+                       .foregroundColor(.white)
+                       .padding()
+                       .background(Color.black.opacity(0.7))
+                       .cornerRadius(10)
+                       .padding()
+                   }
                     
                     if isLoading {
                         ProgressView("Loading...")
@@ -56,9 +71,9 @@ struct ParkingLotManagementView: View {
                             
                             // Modify EV Spots
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Available EV Spots")
+                                Text("Available Electic Vehicle Spots")
                                     .foregroundColor(.white)
-                                TextField("Available EV Spots", value: $availableEVSpots, formatter: NumberFormatter())
+                                TextField("Available Electic Vehicle Spots", value: $availableEVSpots, formatter: NumberFormatter())
                                     .keyboardType(.numberPad)
                                     .padding()
                                     .background(Color.white)
@@ -85,9 +100,19 @@ struct ParkingLotManagementView: View {
                             
                             // Save Confirmation Message
                             if showSaveConfirmation {
-                                Text("Changes saved successfully!")
+                                
+                                if showOfflineAlert
+                                {
+                                    Text("Your changes will be saved when internet connection is restored")
                                     .foregroundColor(.green)
                                     .padding(.top, 10)
+                                }
+                                else
+                                {
+                                    Text("Changes saved successfully!")
+                                    .foregroundColor(.green)
+                                    .padding(.top, 10)
+                                }
                             }
                             
                             Spacer()
@@ -131,6 +156,12 @@ struct ParkingLotManagementView: View {
                 .navigationBarHidden(true)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .networkStatusChanged)) { _ in
+               if networkMonitor.isConnected {
+                   print("Network connection restored, syncing pending updates...")
+                   syncPendingUpdates()
+               }
+           }
     }
     
     private func dismissKeyboard() {
@@ -192,6 +223,29 @@ struct ParkingLotManagementView: View {
         
         dismissKeyboard()
         
+        if !networkMonitor.isConnected {
+            // Save offline
+            let update = OfflineUpdate(
+                parkingLotId: parkingLotID,
+                availableSpots: availableSpots,
+                availableEVSpots: availableEVSpots
+            )
+            OfflineUpdateManager.shared.savePendingUpdate(update)
+            
+            // Show offline alert and confirmation
+            showOfflineAlert = true
+            showSaveConfirmation = true
+            
+            // Reset states after a delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                isSaving = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    showSaveConfirmation = false
+                }
+            }
+            return
+        }
+    
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots/\(parkingLotID)?updateMask.fieldPaths=availableSpots&updateMask.fieldPaths=available_ev_spots") else {
             errorMessage = "Invalid URL"
             isSaving = false
@@ -246,9 +300,49 @@ struct ParkingLotManagementView: View {
         }
         .padding(.horizontal)
     }
+    private func syncPendingUpdates() {
+            let updates = OfflineUpdateManager.shared.getPendingUpdates()
+            print("Found \(updates.count) pending updates to sync")
+
+            
+            for update in updates {
+                guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots/\(update.parkingLotId)?updateMask.fieldPaths=availableSpots&updateMask.fieldPaths=available_ev_spots") else {
+                    continue
+                }
+                
+                let updatedData: [String: Any] = [
+                    "fields": [
+                        "availableSpots": ["integerValue": "\(update.availableSpots)"],
+                        "available_ev_spots": ["integerValue": "\(update.availableEVSpots)"]
+                    ]
+                ]
+                
+                var request = URLRequest(url: url)
+                request.httpMethod = "PATCH"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = try? JSONSerialization.data(withJSONObject: updatedData)
+                
+                URLSession.shared.dataTask(with: request) { _, response, error in
+                                DispatchQueue.main.async {
+                                    if let httpResponse = response as? HTTPURLResponse,
+                                       (200...299).contains(httpResponse.statusCode) {
+                                        print("Successfully synced update for parking lot: \(update.parkingLotId)")
+                                        OfflineUpdateManager.shared.removePendingUpdate(forId: update.parkingLotId)
+                                        
+                                        // Update the UI to reflect the synced changes
+                                        showSaveConfirmation = true
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                            showSaveConfirmation = false
+                                        }
+                                    } else {
+                                        print("Failed to sync update: \(error?.localizedDescription ?? "Unknown error")")
+                                    }
+                                }
+                            }.resume()
+            }
+        }
 }
 
-// MARK: - Models
 
 struct ParkingLotData {
     let name: String
@@ -279,3 +373,43 @@ struct Fields: Decodable {
 struct FirestoreStringValue: Decodable { let stringValue: String }
 struct FirestoreDoubleValue: Decodable { let doubleValue: Double }
 struct FirestoreIntegerValue: Decodable { let integerValue: String }
+
+// For eventual connectivity: save changes locally and push them to DB when connection is restored
+struct OfflineUpdate: Codable {
+    let parkingLotId: String
+    let availableSpots: Int
+    let availableEVSpots: Int
+}
+
+class OfflineUpdateManager {
+    static let shared = OfflineUpdateManager()
+    private let userDefaults = UserDefaults.standard
+    private let pendingUpdatesKey = "pendingParkingUpdates"
+    
+    func savePendingUpdate(_ update: OfflineUpdate) {
+        var updates = getPendingUpdates()
+        // Replace existing update for same parking lot if exists
+        updates.removeAll { $0.parkingLotId == update.parkingLotId }
+        updates.append(update)
+        
+        if let encoded = try? JSONEncoder().encode(updates) {
+            userDefaults.set(encoded, forKey: pendingUpdatesKey)
+        }
+    }
+    
+    func getPendingUpdates() -> [OfflineUpdate] {
+        guard let data = userDefaults.data(forKey: pendingUpdatesKey),
+              let updates = try? JSONDecoder().decode([OfflineUpdate].self, from: data) else {
+            return []
+        }
+        return updates
+    }
+    
+    func removePendingUpdate(forId: String) {
+        var updates = getPendingUpdates()
+        updates.removeAll { $0.parkingLotId == forId }
+        if let encoded = try? JSONEncoder().encode(updates) {
+            userDefaults.set(encoded, forKey: pendingUpdatesKey)
+        }
+    }
+}

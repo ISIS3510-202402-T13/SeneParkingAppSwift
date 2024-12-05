@@ -88,6 +88,17 @@ struct ParkingLotDetailView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                     }
+                    .disabled(!networkMonitor.isConnected)
+                        
+                        if !networkMonitor.isConnected {
+                            HStack {
+                                Image(systemName: "wifi.slash")
+                                Text("Offline - Reservations unavailable")
+                                    .font(.footnote)
+                            }
+                            .foregroundColor(.red)
+                            .padding(.top, 4)
+                        }
                 }
                 
                 if let spots = availableSpots {

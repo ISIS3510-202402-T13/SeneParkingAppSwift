@@ -28,23 +28,47 @@ class ReservationViewModel: ObservableObject {
     @Published var reservations: [Reservation] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
-    
-    // Sort reservations by status
-    var upcomingReservations: [Reservation] {
-        reservations.filter { $0.status == .upcoming }
-    }
+    let networkMonitor = NetworkMonitor.shared
+    private let userDefaults = UserDefaults.standard
+    private let cachedReservationsKey = "cachedReservations"
     
     var activeReservations: [Reservation] {
         reservations.filter { $0.status == .active }
+    }
+    
+    var upcomingReservations: [Reservation] {
+        reservations.filter { $0.status == .upcoming }
     }
     
     var pastReservations: [Reservation] {
         reservations.filter { $0.status == .completed || $0.status == .cancelled }
     }
     
+    // Cache management
+    private func cacheReservations(_ reservations: [Reservation]) {
+        if let encoded = try? JSONEncoder().encode(reservations) {
+            userDefaults.set(encoded, forKey: cachedReservationsKey)
+        }
+    }
+    
+    private func loadCachedReservations() -> [Reservation] {
+        guard let data = userDefaults.data(forKey: cachedReservationsKey),
+              let reservations = try? JSONDecoder().decode([Reservation].self, from: data) else {
+            return []
+        }
+        return reservations
+    }
+    
     func fetchReservations() {
         isLoading = true
         errorMessage = nil
+        
+        // If offline, load from cache
+        if !NetworkMonitor.shared.isConnected {
+            self.reservations = loadCachedReservations()
+            self.isLoading = false
+            return
+        }
         
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/reservations") else {
             errorMessage = "Invalid URL"
@@ -52,78 +76,29 @@ class ReservationViewModel: ObservableObject {
             return
         }
         
-        // Async/Await with DispatchQueue.main used for UI updates
         URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 
                 if let error = error {
                     self?.errorMessage = error.localizedDescription
+                    // Load cached data if network request fails
+                    self?.reservations = self?.loadCachedReservations() ?? []
                     return
                 }
                 
                 guard let data = data else {
                     self?.errorMessage = "No data received"
+                    self?.reservations = self?.loadCachedReservations() ?? []
                     return
                 }
                 
-                // Parse and update reservations
+                // Parse and cache the data
                 self?.parseReservations(data)
             }
         }.resume()
     }
     
-    func cancelReservation(_ reservation: Reservation) {
-        // Construct the URL for the specific reservation document
-        let documentPath = String(reservation.id.split(separator: "/").last ?? "")
-        guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/reservations/\(documentPath)") else {
-            errorMessage = "Invalid URL"
-            return
-        }
-
-        // Create the update payload
-        let updateData: [String: Any] = [
-            "fields": [
-                "status": ["stringValue": "cancelled"],
-                "parkingLotId": ["stringValue": reservation.parkingLotId],
-                "parkingLotName": ["stringValue": reservation.parkingLotName],
-                "startTime": ["timestampValue": ISO8601DateFormatter().string(from: reservation.startTime)],
-                "endTime": ["timestampValue": ISO8601DateFormatter().string(from: reservation.endTime)],
-                "fareAmount": ["doubleValue": reservation.fareAmount]
-            ]
-        ]
-
-        // Configure the request
-        var request = URLRequest(url: url)
-        request.httpMethod = "PATCH"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: updateData)
-        } catch {
-            self.errorMessage = "Failed to encode update data"
-            return
-        }
-
-        // Async/Await with DispatchQueue.main used for UI updates
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                    return
-                }
-
-                if let httpResponse = response as? HTTPURLResponse,
-                   !(200...299).contains(httpResponse.statusCode) {
-                    self?.errorMessage = "Failed to cancel reservation: HTTP \(httpResponse.statusCode)"
-                    return
-                }
-
-                // Refresh reservations after successful cancellation
-                self?.fetchReservations()
-            }
-        }.resume()
-    }
     
     private func parseReservations(_ data: Data) {
         do {
@@ -160,16 +135,71 @@ class ReservationViewModel: ObservableObject {
                 
                 DispatchQueue.main.async {
                     self.reservations = reservations
+                    self.cacheReservations(reservations)
                 }
             }
         } catch {
             print("Error parsing reservations: \(error.localizedDescription)")
         }
     }
+    
+    func cancelReservation(_ reservation: Reservation) {
+           // Get the document path from the reservation ID
+           let documentPath = String(reservation.id.split(separator: "/").last ?? "")
+           guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/reservations/\(documentPath)") else {
+               errorMessage = "Invalid URL"
+               return
+           }
+
+           // Create the update payload
+           let updateData: [String: Any] = [
+               "fields": [
+                   "status": ["stringValue": "cancelled"],
+                   "parkingLotId": ["stringValue": reservation.parkingLotId],
+                   "parkingLotName": ["stringValue": reservation.parkingLotName],
+                   "startTime": ["timestampValue": ISO8601DateFormatter().string(from: reservation.startTime)],
+                   "endTime": ["timestampValue": ISO8601DateFormatter().string(from: reservation.endTime)],
+                   "fareAmount": ["doubleValue": reservation.fareAmount]
+               ]
+           ]
+
+           // Configure the request
+           var request = URLRequest(url: url)
+           request.httpMethod = "PATCH"
+           request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+           
+           do {
+               request.httpBody = try JSONSerialization.data(withJSONObject: updateData)
+           } catch {
+               self.errorMessage = "Failed to encode update data"
+               return
+           }
+
+           // Make the request
+           URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+               DispatchQueue.main.async {
+                   if let error = error {
+                       self?.errorMessage = error.localizedDescription
+                       return
+                   }
+
+                   if let httpResponse = response as? HTTPURLResponse,
+                      !(200...299).contains(httpResponse.statusCode) {
+                       self?.errorMessage = "Failed to cancel reservation: HTTP \(httpResponse.statusCode)"
+                       return
+                   }
+
+                   // Refresh reservations after successful cancellation
+                   self?.fetchReservations()
+               }
+           }.resume()
+       }
 }
+
 
 struct MyReservationsView: View {
     @StateObject private var viewModel = ReservationViewModel()
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
@@ -177,58 +207,66 @@ struct MyReservationsView: View {
             ZStack {
                 Color.white.edgesIgnoringSafeArea(.all)
                 
-                if viewModel.isLoading {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                } else {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            if !viewModel.activeReservations.isEmpty {
-                                ReservationSection(
-                                    title: "Current Reservations",
-                                    reservations: viewModel.activeReservations,
-                                    viewModel: viewModel
-                                )
-                            }
-                            
-                            if !viewModel.upcomingReservations.isEmpty {
-                                ReservationSection(
-                                    title: "Upcoming Reservations",
-                                    reservations: viewModel.upcomingReservations,
-                                    viewModel: viewModel,
-                                    allowCancellation: true
-                                )
-                            }
-                            
-                            if !viewModel.pastReservations.isEmpty {
-                                ReservationSection(
-                                    title: "Past Reservations",
-                                    reservations: viewModel.pastReservations,
-                                    viewModel: viewModel
-                                )
-                            }
-                            
-                            if viewModel.activeReservations.isEmpty &&
-                               viewModel.upcomingReservations.isEmpty &&
-                               viewModel.pastReservations.isEmpty {
-                                EmptyStateView()
-                            }
+                VStack {
+                    if !networkMonitor.isConnected {
+                        HStack {
+                            Image(systemName: "wifi.slash")
+                                .foregroundColor(.white)
+                            Text("You are currently offline")
+                                .foregroundColor(.white)
                         }
                         .padding()
+                        .background(Color.gray)
+                        .cornerRadius(10)
+                        .padding(.top)
+                    }
+                    
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 20) {
+                                if !viewModel.activeReservations.isEmpty {
+                                    ReservationSection(
+                                        title: "Current Reservations",
+                                        reservations: viewModel.activeReservations,
+                                        viewModel: viewModel,
+                                        isOffline: !networkMonitor.isConnected
+                                    )
+                                }
+                                
+                                if !viewModel.upcomingReservations.isEmpty {
+                                    ReservationSection(
+                                        title: "Upcoming Reservations",
+                                        reservations: viewModel.upcomingReservations,
+                                        viewModel: viewModel,
+                                        allowCancellation: true,
+                                        isOffline: !networkMonitor.isConnected
+                                    )
+                                }
+                                
+                                if !viewModel.pastReservations.isEmpty {
+                                    ReservationSection(
+                                        title: "Past Reservations",
+                                        reservations: viewModel.pastReservations,
+                                        viewModel: viewModel,
+                                        isOffline: !networkMonitor.isConnected
+                                    )
+                                }
+                                
+                                if viewModel.activeReservations.isEmpty &&
+                                    viewModel.upcomingReservations.isEmpty &&
+                                    viewModel.pastReservations.isEmpty {
+                                    EmptyStateView()
+                                }
+                            }
+                            .padding()
+                        }
                     }
                 }
             }
             .navigationTitle("My Reservations")
-            .alert(item: Binding(
-                get: { viewModel.errorMessage.map { ErrorAlert(message: $0) } },
-                set: { _ in viewModel.errorMessage = nil }
-            )) { error in
-                Alert(
-                    title: Text("Error"),
-                    message: Text(error.message),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
         }
         .onAppear {
             viewModel.fetchReservations()
@@ -241,6 +279,7 @@ struct ReservationSection: View {
     let reservations: [Reservation]
     let viewModel: ReservationViewModel
     var allowCancellation: Bool = false
+    var isOffline: Bool
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -254,19 +293,21 @@ struct ReservationSection: View {
                 ReservationCard(
                     reservation: reservation,
                     allowCancellation: allowCancellation,
+                    isOffline: isOffline,
                     onCancel: {
                         viewModel.cancelReservation(reservation)
                     }
                 )
             }
         }
-        .padding(.horizontal)  // Added horizontal padding
+        .padding(.horizontal)
     }
 }
 
 struct ReservationCard: View {
     let reservation: Reservation
     let allowCancellation: Bool
+    let isOffline: Bool
     let onCancel: () -> Void
     @State private var showingCancelAlert = false
     
@@ -284,15 +325,20 @@ struct ReservationCard: View {
             }
             
             if allowCancellation && reservation.status == .upcoming {
-                Button(action: { showingCancelAlert = true }) {
-                    Text("Cancel Reservation")
+                Button(action: {
+                    if !isOffline {
+                        showingCancelAlert = true
+                    }
+                }) {
+                    Text(isOffline ? "Connect to the internet to cancel" : "Cancel Reservation")
                         .fontWeight(.medium)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
-                        .background(Color.red.opacity(0.8))
+                        .background(isOffline ? Color.gray : Color.red.opacity(0.8))
                         .cornerRadius(8)
                 }
+                .disabled(isOffline)
             }
         }
         .padding()
