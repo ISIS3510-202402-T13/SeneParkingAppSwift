@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_98138845fa8a58cd34cbb90bd53bf85b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_98138845fa8a58cd34cbb90bd53bf85b" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_98138845fa8a58cd34cbb90bd53bf85b = L.map(
+                "map_98138845fa8a58cd34cbb90bd53bf85b",
+                {
+                    center: [4.711, -74.0721],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 13,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_979bd4d1529a6cd121ac1d1b208891b5 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            );
+        
+    
+            tile_layer_979bd4d1529a6cd121ac1d1b208891b5.addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+            var circle_marker_15d25a2a22f6335d85d09a3ec7d80d41 = L.circleMarker(
+                [-74.068, 4.601766],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_eceb0fcc05a38ac9be5402040888999e = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_bbcb2e81160a56e0b14d1c9bf8254a8f = $(`<div id="html_bbcb2e81160a56e0b14d1c9bf8254a8f" style="width: 100.0%; height: 100.0%;">     <b>Jdkd787’sndidk</b><br>     <b>Daily Fare:</b> $5000<br>     <b>Available Spots:</b> 89<br>     <b>EV Spots:</b> 5     </div>`)[0];
+                popup_eceb0fcc05a38ac9be5402040888999e.setContent(html_bbcb2e81160a56e0b14d1c9bf8254a8f);
+            
+        
+
+        circle_marker_15d25a2a22f6335d85d09a3ec7d80d41.bindPopup(popup_eceb0fcc05a38ac9be5402040888999e)
+        ;
+
+        
+    
+    
+            var circle_marker_65642d333aa92d75c2d509002a378e76 = L.circleMarker(
+                [4.711, -74.111],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_522168d70bcf5c3fc3bc994140cc6129 = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_64bee691f049faa15088c4be525d9e7e = $(`<div id="html_64bee691f049faa15088c4be525d9e7e" style="width: 100.0%; height: 100.0%;">     <b>Parqueadero SD</b><br>     <b>Daily Fare:</b> $0<br>     <b>Available Spots:</b> 100<br>     <b>EV Spots:</b> 20     </div>`)[0];
+                popup_522168d70bcf5c3fc3bc994140cc6129.setContent(html_64bee691f049faa15088c4be525d9e7e);
+            
+        
+
+        circle_marker_65642d333aa92d75c2d509002a378e76.bindPopup(popup_522168d70bcf5c3fc3bc994140cc6129)
+        ;
+
+        
+    
+    
+            var circle_marker_66c28c82ac7d18ad726456569ae13379 = L.circleMarker(
+                [10.0, 10.0],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 0.01, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_610b057c80ee139d6305391107d959fa = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_87977fe0b427f282a694c4783addf5c0 = $(`<div id="html_87977fe0b427f282a694c4783addf5c0" style="width: 100.0%; height: 100.0%;">     <b>TEST</b><br>     <b>Daily Fare:</b> $10<br>     <b>Available Spots:</b> 10<br>     <b>EV Spots:</b> 10     </div>`)[0];
+                popup_610b057c80ee139d6305391107d959fa.setContent(html_87977fe0b427f282a694c4783addf5c0);
+            
+        
+
+        circle_marker_66c28c82ac7d18ad726456569ae13379.bindPopup(popup_610b057c80ee139d6305391107d959fa)
+        ;
+
+        
+    
+    
+            var circle_marker_f33ddcc9664660f82041ba277320a8fa = L.circleMarker(
+                [53.23, 41.52],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_53e0af1426edadefb59b8ef999d13da3 = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_d6e50cbf35c406773a0b9859fab73794 = $(`<div id="html_d6e50cbf35c406773a0b9859fab73794" style="width: 100.0%; height: 100.0%;">     <b>Parqueadero de Jonia</b><br>     <b>Daily Fare:</b> $15000<br>     <b>Available Spots:</b> 50<br>     <b>EV Spots:</b> 5     </div>`)[0];
+                popup_53e0af1426edadefb59b8ef999d13da3.setContent(html_d6e50cbf35c406773a0b9859fab73794);
+            
+        
+
+        circle_marker_f33ddcc9664660f82041ba277320a8fa.bindPopup(popup_53e0af1426edadefb59b8ef999d13da3)
+        ;
+
+        
+    
+    
+            var circle_marker_7f3e35d5678b9c40681ee22a807935c8 = L.circleMarker(
+                [4.717, -74.1],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 0.022, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_ff4da46f9eb7e15c710b6ff729f9cbd6 = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_3163a0535f5412ca62eb938a97a082fb = $(`<div id="html_3163a0535f5412ca62eb938a97a082fb" style="width: 100.0%; height: 100.0%;">     <b>ParkingTry</b><br>     <b>Daily Fare:</b> $22<br>     <b>Available Spots:</b> 2<br>     <b>EV Spots:</b> 10     </div>`)[0];
+                popup_ff4da46f9eb7e15c710b6ff729f9cbd6.setContent(html_3163a0535f5412ca62eb938a97a082fb);
+            
+        
+
+        circle_marker_7f3e35d5678b9c40681ee22a807935c8.bindPopup(popup_ff4da46f9eb7e15c710b6ff729f9cbd6)
+        ;
+
+        
+    
+    
+            var circle_marker_2bc1484daf8f0b47789dc7ae56f6da95 = L.circleMarker(
+                [4.602, -74.066],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 16.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_a48d2eb6bea08fdb9039634f9c23cf4d = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_27aa55eb55674dcffd564b042a3d4935 = $(`<div id="html_27aa55eb55674dcffd564b042a3d4935" style="width: 100.0%; height: 100.0%;">     <b>SantoDomingo building</b><br>     <b>Daily Fare:</b> $16000<br>     <b>Available Spots:</b> 10<br>     <b>EV Spots:</b> 2     </div>`)[0];
+                popup_a48d2eb6bea08fdb9039634f9c23cf4d.setContent(html_27aa55eb55674dcffd564b042a3d4935);
+            
+        
+
+        circle_marker_2bc1484daf8f0b47789dc7ae56f6da95.bindPopup(popup_a48d2eb6bea08fdb9039634f9c23cf4d)
+        ;
+
+        
+    
+    
+            var circle_marker_b5de1a09aa6f07439ca51e94951adfe6 = L.circleMarker(
+                [4.601, -74.065],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 20.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_fb696a212073a9f74bbd8e6b002ae2b4 = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_db5d4e9a4272dd0944c7f0a3e3ac9f7f = $(`<div id="html_db5d4e9a4272dd0944c7f0a3e3ac9f7f" style="width: 100.0%; height: 100.0%;">     <b>Parking Way</b><br>     <b>Daily Fare:</b> $20000<br>     <b>Available Spots:</b> 5<br>     <b>EV Spots:</b> 0     </div>`)[0];
+                popup_fb696a212073a9f74bbd8e6b002ae2b4.setContent(html_db5d4e9a4272dd0944c7f0a3e3ac9f7f);
+            
+        
+
+        circle_marker_b5de1a09aa6f07439ca51e94951adfe6.bindPopup(popup_fb696a212073a9f74bbd8e6b002ae2b4)
+        ;
+
+        
+    
+    
+            var circle_marker_19af6bf775a3a49b04b82a9889292288 = L.circleMarker(
+                [4.6, -74.064],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_deeb0171656ccf906b3bf4009eb36909 = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_19f70d432fd616edcde284b97647392c = $(`<div id="html_19f70d432fd616edcde284b97647392c" style="width: 100.0%; height: 100.0%;">     <b>Parqueadero Monserrate</b><br>     <b>Daily Fare:</b> $10000<br>     <b>Available Spots:</b> 0<br>     <b>EV Spots:</b> 0     </div>`)[0];
+                popup_deeb0171656ccf906b3bf4009eb36909.setContent(html_19f70d432fd616edcde284b97647392c);
+            
+        
+
+        circle_marker_19af6bf775a3a49b04b82a9889292288.bindPopup(popup_deeb0171656ccf906b3bf4009eb36909)
+        ;
+
+        
+    
+    
+            var circle_marker_904dd7d84c23cd015b760a1989c088a9 = L.circleMarker(
+                [4.605, -74.067],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5.0, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_900096bf7479feb9b303882dc1a9406e = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_72f7a3b9d061b6f0bcabf57a9b14ea9d = $(`<div id="html_72f7a3b9d061b6f0bcabf57a9b14ea9d" style="width: 100.0%; height: 100.0%;">     <b>Parqueadero Balto</b><br>     <b>Daily Fare:</b> $5000<br>     <b>Available Spots:</b> 40<br>     <b>EV Spots:</b> 5     </div>`)[0];
+                popup_900096bf7479feb9b303882dc1a9406e.setContent(html_72f7a3b9d061b6f0bcabf57a9b14ea9d);
+            
+        
+
+        circle_marker_904dd7d84c23cd015b760a1989c088a9.bindPopup(popup_900096bf7479feb9b303882dc1a9406e)
+        ;
+
+        
+    
+    
+            var circle_marker_326bc215e6ff21fd031d4542053606f7 = L.circleMarker(
+                [1.0, 1.0],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 0.001, "stroke": true, "weight": 3}
+            ).addTo(map_98138845fa8a58cd34cbb90bd53bf85b);
+        
+    
+        var popup_b4dfadab1f9d7e7903c3e5aa9ea99afd = L.popup({"maxWidth": 250});
+
+        
+            
+                var html_62993aad1fd351181476db4e28ae9b72 = $(`<div id="html_62993aad1fd351181476db4e28ae9b72" style="width: 100.0%; height: 100.0%;">     <b>A</b><br>     <b>Daily Fare:</b> $1<br>     <b>Available Spots:</b> 1<br>     <b>EV Spots:</b> 1     </div>`)[0];
+                popup_b4dfadab1f9d7e7903c3e5aa9ea99afd.setContent(html_62993aad1fd351181476db4e28ae9b72);
+            
+        
+
+        circle_marker_326bc215e6ff21fd031d4542053606f7.bindPopup(popup_b4dfadab1f9d7e7903c3e5aa9ea99afd)
+        ;
+
+        
+    
+</script>
+</html>
