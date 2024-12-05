@@ -1,10 +1,3 @@
-//
-//  MainMap.swift
-//  SeneParking
-//
-//  Created by Pablo Pastrana on 2/10/24.
-//
-
 import SwiftUI
 import MapKit
 import CoreLocation
@@ -73,11 +66,11 @@ struct MainMapView: View {
         center: CLLocationCoordinate2D(latitude: 4.6015, longitude: -74.0655),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
-
+    
     var filteredParkingLots: [ParkingLot] {
         showEVOnly ? parkingLots.filter { $0.availableEVSpots > 0 } : parkingLots
     }
-
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -103,20 +96,20 @@ struct MainMapView: View {
                         .padding(.top)
                     
                     HStack {
-                            Button(action: {
-                                showMyReservations = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "list.bullet.clipboard")
-                                    Text("My Reservations")
-                                }
-                                .padding()
-                                .background(Color.white.opacity(0.8))
-                                .cornerRadius(10)
+                        Button(action: {
+                            showMyReservations = true
+                        }) {
+                            HStack {
+                                Image(systemName: "list.bullet.clipboard")
+                                Text("My Reservations")
                             }
-                            Spacer()
+                            .padding()
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(10)
                         }
-                        .padding(.horizontal)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
                     
                     if !NetworkMonitor.shared.isConnected {
                         OfflineIndicator()
@@ -163,17 +156,29 @@ struct MainMapView: View {
                             .frame(width: 150)
                     }
                     .padding()
-                    }
                 }
-                .navigationDestination(isPresented: $showMyReservations) {
-                    MyReservationsView()
-                }
-                .navigationBarHidden(true)
-                .onAppear(perform: fetchParkingLots)
+            }
+            .navigationDestination(isPresented: $showMyReservations) {
+                MyReservationsView()
             }
             .navigationBarHidden(true)
+            .onAppear(perform: fetchParkingLots)
+            .onAppear {
+                NotificationCenter.default.addObserver(
+                    forName: .networkStatusChanged,
+                    object: nil,
+                    queue: .main
+                ) { _ in
+                    incrementWeekdayCounter2()
+                }
+            }
+            .onDisappear {
+                NotificationCenter.default.removeObserver(self, name: .networkStatusChanged, object: nil)
+            }
         }
-
+        .navigationBarHidden(true)
+    }
+    
     func incrementWeekdayCounter() {
         // Get the current day of the week in English and capitalize it
         let dateFormatter = DateFormatter()
@@ -181,7 +186,7 @@ struct MainMapView: View {
         dateFormatter.dateFormat = "EEEE" // Full weekday name
         
         let weekday = dateFormatter.string(from: Date()) // Capitalized weekday name
-
+        
         // Define the URL to fetch the document
         guard let fetchUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/SzkDDfUxEKfSFVblmq9O") else {
             print("Invalid URL for Firebase fetch")
@@ -215,7 +220,7 @@ struct MainMapView: View {
                         print("Invalid URL for Firebase update")
                         return
                     }
-
+                    
                     // Define the request payload with updated value
                     let payload: [String: Any] = [
                         "fields": [
@@ -234,7 +239,7 @@ struct MainMapView: View {
                     request.httpMethod = "PATCH"
                     request.httpBody = jsonData
                     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
+                    
                     // Perform the update request
                     URLSession.shared.dataTask(with: request) { data, response, error in
                         if let error = error {
@@ -252,7 +257,86 @@ struct MainMapView: View {
             }
         }.resume()
     }
-
+    
+    func incrementWeekdayCounter2() {
+        // Get the current day of the week in English and capitalize it
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US") // Ensure English locale
+        dateFormatter.dateFormat = "EEEE" // Full weekday name
+        
+        let weekday = dateFormatter.string(from: Date()) // Capitalized weekday name
+        
+        // Define the URL to fetch the document
+        guard let fetchUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/ConnectivityAnalytics") else {
+            print("Invalid URL for Firebase fetch")
+            return
+        }
+        
+        // Fetch the current value
+        URLSession.shared.dataTask(with: fetchUrl) { data, response, error in
+            if let error = error {
+                print("Error fetching current counter: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                   let fields = json["fields"] as? [String: Any],
+                   let weekdayField = fields[weekday] as? [String: Any],
+                   let currentValueString = weekdayField["integerValue"] as? String,
+                   let currentValue = Int(currentValueString) {
+                    
+                    // Increment the current value by 1
+                    let updatedValue = currentValue + 1
+                    
+                    // Define the URL with document path for updating
+                    guard let updateUrl = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/data/ConnectivityAnalytics?updateMask.fieldPaths=\(weekday)") else {
+                        print("Invalid URL for Firebase update")
+                        return
+                    }
+                    
+                    // Define the request payload with updated value
+                    let payload: [String: Any] = [
+                        "fields": [
+                            weekday: ["integerValue": "\(updatedValue)"]
+                        ]
+                    ]
+                    
+                    // Serialize payload to JSON
+                    guard let jsonData = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
+                        print("Error encoding JSON")
+                        return
+                    }
+                    
+                    // Configure the request
+                    var request = URLRequest(url: updateUrl)
+                    request.httpMethod = "PATCH"
+                    request.httpBody = jsonData
+                    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                    
+                    // Perform the update request
+                    URLSession.shared.dataTask(with: request) { data, response, error in
+                        if let error = error {
+                            print("Error updating weekday counter: \(error.localizedDescription)")
+                        } else {
+                            print("Weekday counter updated successfully for \(weekday) with new value: \(updatedValue)")
+                        }
+                    }.resume()
+                    
+                } else {
+                    print("Error parsing current counter value")
+                }
+            } catch {
+                print("Error parsing JSON: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+    
     func lotColor(for lot: ParkingLot) -> Color {
         if lot.availableEVSpots > 0 {
             return .blue
@@ -262,37 +346,37 @@ struct MainMapView: View {
             return .red
         }
     }
-
+    
     func fetchParkingLots() {
         
         if !NetworkMonitor.shared.isConnected {
-                    if let cached = OfflineDataManager.shared.getCachedParkingLots() {
-                        self.parkingLots = cached
-                    }
-                    return
-                }
+            if let cached = OfflineDataManager.shared.getCachedParkingLots() {
+                self.parkingLots = cached
+            }
+            return
+        }
         
         guard let url = URL(string: "https://firestore.googleapis.com/v1/projects/seneparking-f457b/databases/(default)/documents/parkingLots") else {
             print("Invalid URL")
             return
         }
-
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
-               if let error = error {
-                   print("Error fetching parking lots: \(error.localizedDescription)")
-                   DispatchQueue.main.async {
-                       self.parkingLots = self.cachedParkingLots
-                   }
-                   return
-               }
-
-               guard let data = data else {
-                   print("No data received")
-                   return
-               }
-
-               do {
-                   
+            if let error = error {
+                print("Error fetching parking lots: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.parkingLots = self.cachedParkingLots
+                }
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+            
+            do {
+                
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let documents = json["documents"] as? [[String: Any]] {
                     let newParkingLots = documents.compactMap { document -> ParkingLot? in
@@ -307,22 +391,22 @@ struct MainMapView: View {
                               let closeTime = fields["close_time"] as? [String: String] else {
                             return nil
                         }
-
+                        
                         return ParkingLot(
-                                id: document["name"] as? String ?? UUID().uuidString,
-                                name: name["stringValue"] ?? "",
-                                coordinate: CLLocationCoordinate2D(
-                                    latitude: latitude["doubleValue"] ?? 0,
-                                    longitude: longitude["doubleValue"] ?? 0
-                                ),
-                                availableSpots: Int(availableSpots["integerValue"] ?? "") ?? 0,
-                                availableEVSpots: Int(availableEVSpots["integerValue"] ?? "") ?? 0,
-                                farePerDay: Int(farePerDay["integerValue"] ?? "") ?? 0,
-                                openTime: openTime["stringValue"] ?? "N/A",
-                                closeTime: closeTime["stringValue"] ?? "N/A"
-                            )
+                            id: document["name"] as? String ?? UUID().uuidString,
+                            name: name["stringValue"] ?? "",
+                            coordinate: CLLocationCoordinate2D(
+                                latitude: latitude["doubleValue"] ?? 0,
+                                longitude: longitude["doubleValue"] ?? 0
+                            ),
+                            availableSpots: Int(availableSpots["integerValue"] ?? "") ?? 0,
+                            availableEVSpots: Int(availableEVSpots["integerValue"] ?? "") ?? 0,
+                            farePerDay: Int(farePerDay["integerValue"] ?? "") ?? 0,
+                            openTime: openTime["stringValue"] ?? "N/A",
+                            closeTime: closeTime["stringValue"] ?? "N/A"
+                        )
                     }
-
+                    
                     DispatchQueue.main.async {
                         self.cachedParkingLots = newParkingLots // Cache the fetched data
                         self.parkingLots = newParkingLots // Update the main data
@@ -339,7 +423,7 @@ struct MainMapView: View {
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     @Published var location: CLLocation?
-
+    
     override init() {
         super.init()
         locationManager.delegate = self
@@ -347,7 +431,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }
-
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         self.location = location
